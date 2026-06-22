@@ -14,17 +14,7 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".webm", ".avi", ".mpeg", ".mpg"}
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".opus"}
 MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
 
-# vLLM reads uploads from memory (BytesIO). MP4/M4A/WebM fail there — use ffmpeg first.
-_VLLM_DIRECT_EXTENSIONS = {".wav", ".mp3", ".flac", ".ogg", ".mpeg", ".mpg"}
-
-_MEDIA_MIME_TYPES = {
-    ".mp3": "audio/mpeg",
-    ".wav": "audio/wav",
-    ".flac": "audio/flac",
-    ".ogg": "audio/ogg",
-    ".mpeg": "audio/mpeg",
-    ".mpg": "audio/mpeg",
-}
+_WHISPER_UPLOAD_NAME = "audio.wav"
 
 
 class TranscriptionService:
@@ -56,11 +46,8 @@ class TranscriptionService:
             media_path = tmp_path / safe_name
             media_path.write_bytes(raw)
             try:
-                whisper_path, upload_name, mime_type = self._prepare_whisper_file(
-                    media_path,
-                    tmp_path,
-                )
-                content = self._call_whisper(whisper_path, upload_name, mime_type)
+                whisper_path = self._prepare_whisper_wav(media_path, tmp_path)
+                content = self._call_whisper(whisper_path)
             except RuntimeError as exc:
                 raise ExternalAPIError(str(exc)) from exc
             except Exception as exc:
@@ -71,32 +58,37 @@ class TranscriptionService:
         output_name = f"{Path(filename).stem}.txt"
         return TextDocument(name=output_name, content=content)
 
-    def _prepare_whisper_file(
-        self,
-        media_path: Path,
-        tmp_dir: Path,
-    ) -> tuple[Path, str, str]:
-        suffix = media_path.suffix.lower()
-        if suffix in _VLLM_DIRECT_EXTENSIONS:
-            mime_type = _MEDIA_MIME_TYPES.get(suffix, "application/octet-stream")
-            return media_path, media_path.name, mime_type
+    def _prepare_whisper_wav(self, media_path: Path, tmp_dir: Path) -> Path:
+        output_path = tmp_dir / _WHISPER_UPLOAD_NAME
 
-        output_path = tmp_dir / "whisper-input.mp3"
-        self._transcode_to_mp3(media_path, output_path)
-        return output_path, "audio.mp3", "audio/mpeg"
+        # Probe input first
+        probe = ffmpeg.probe(str(media_path))
+        audio_streams = [s for s in probe["streams"] if s["codec_type"] == "audio"]
+        if not audio_streams:
+            raise RuntimeError(f"No audio stream found in '{media_path.name}'.")
+
+        self._transcode_to_wav(media_path, output_path)
+
+        # Verify output duration
+        out_probe = ffmpeg.probe(str(output_path))
+        duration = float(out_probe["format"].get("duration", 0))
+        if duration < 0.1:
+            raise RuntimeError(f"Transcoded WAV is too short ({duration:.2f}s).")
+
+        return output_path
 
     @staticmethod
-    def _transcode_to_mp3(input_path: Path, output_path: Path) -> None:
+    def _transcode_to_wav(input_path: Path, output_path: Path) -> None:
         try:
             (
                 ffmpeg.input(str(input_path))
                 .output(
                     str(output_path),
-                    vn=None,
-                    acodec="libmp3lame",
+                    format="wav",
+                    acodec="pcm_s16le",
                     ar=16000,
                     ac=1,
-                    audio_bitrate="64k",
+                    vn=None,
                 )
                 .overwrite_output()
                 .run(capture_stderr=True)
@@ -109,27 +101,23 @@ class TranscriptionService:
         if not output_path.is_file() or output_path.stat().st_size == 0:
             raise RuntimeError("ffmpeg produced an empty audio file.")
 
-    def _call_whisper(
-        self,
-        media_path: Path,
-        upload_name: str,
-        mime_type: str,
-    ) -> str:
-        if not media_path.is_file() or media_path.stat().st_size == 0:
+
+    def _call_whisper(self, wav_path: Path) -> str:
+        if not wav_path.is_file() or wav_path.stat().st_size == 0:
             raise RuntimeError("Media file is empty.")
 
         client = OpenAI(
             api_key=self._config.whisper_api_key or "not-needed",
-            base_url=self._config.whisper_base_url.rstrip("/"),
-            timeout=self._config.request_timeout,
+            base_url=self._config.whisper_base_url,
         )
-        with media_path.open("rb") as media_file:
-            response = client.audio.transcriptions.create(
+
+        with wav_path.open("rb") as audio_file:
+            transcript = client.audio.transcriptions.create(
                 model=self._config.transcription_model,
-                file=(upload_name, media_file, mime_type),
+                file=(wav_path.name, audio_file, "audio/wav"),
             )
 
-        text = (response.text or "").strip()
+        text = transcript.text.strip()
         if not text:
             raise RuntimeError("Whisper returned an empty transcript.")
         return text

@@ -12,3 +12,4 @@ data/output/*
 data/template_sources/*
 !data/template_sources/.gitkeep
 .cursor
+data
