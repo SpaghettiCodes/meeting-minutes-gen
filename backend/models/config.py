@@ -11,23 +11,22 @@ BACKEND_ROOT = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BACKEND_ROOT.parent
 ENV_FILE = PROJECT_ROOT / ".env.backend"
 
-DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
-DEFAULT_GEMINI_TRANSCRIPTION_MODEL = "gemini-2.0-flash"
-DEFAULT_LLM_MAX_MODEL_LEN = 1_048_576
+DEFAULT_LLM_BASE_URL = "http://localhost:8002/v1"
+DEFAULT_LLM_MODEL = "default"
+DEFAULT_WHISPER_BASE_URL = "http://localhost:8000/v1"
+DEFAULT_WHISPER_MODEL = "openai/whisper-small"
 
 
 @dataclass(frozen=True)
 class AppConfig:
-    base_url: str
-    model: str
+    llm_base_url: str
+    llm_model: str
+    llm_api_key: str | None
+    whisper_base_url: str
     transcription_model: str
-    api_key: str | None
+    whisper_api_key: str | None
     temperature: float
-    max_tokens: int
-    llm_max_model_len: int
     request_timeout: float
-    template_conversion_max_input_chars: int
     template_conversion_sources_dir: Path
     transcript_dir: Path
     template_dir: Path
@@ -54,29 +53,24 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         if project_env.is_file():
             load_dotenv(project_env)
 
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("VLLM_API_KEY")
-    model = (
-        os.getenv("GEMINI_MODEL")
-        or os.getenv("LLM_MODEL")
-        or os.getenv("VLLM_MODEL")
-        or DEFAULT_GEMINI_MODEL
-    )
-    transcription_model = (
-        os.getenv("GEMINI_TRANSCRIPTION_MODEL")
-        or os.getenv("WHISPER_MODEL")
-        or model
-    )
-    base_url = (
-        os.getenv("GEMINI_BASE_URL")
+    llm_base_url = (
+        os.getenv("LLM_BASE_URL")
         or os.getenv("VLLM_BASE_URL")
-        or DEFAULT_GEMINI_BASE_URL
+        or DEFAULT_LLM_BASE_URL
     )
-
-    if not api_key:
-        raise ValueError(
-            "GEMINI_API_KEY must be set in .env "
-            "(get one at https://aistudio.google.com/apikey)"
-        )
+    llm_model = (
+        os.getenv("LLM_MODEL")
+        or os.getenv("VLLM_MODEL")
+        or DEFAULT_LLM_MODEL
+    )
+    llm_api_key = os.getenv("LLM_API_KEY") or os.getenv("VLLM_API_KEY") or None
+    whisper_base_url = (
+        os.getenv("WHISPER_BASE_URL")
+        or os.getenv("VLLM_WHISPER_BASE_URL")
+        or DEFAULT_WHISPER_BASE_URL
+    )
+    transcription_model = os.getenv("WHISPER_MODEL") or DEFAULT_WHISPER_MODEL
+    whisper_api_key = os.getenv("WHISPER_API_KEY") or os.getenv("VLLM_API_KEY") or None
 
     def resolve_dir(key: str, default: str) -> Path:
         path = Path(os.getenv(key, default))
@@ -85,22 +79,21 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         return path
 
     output_dir = resolve_dir("OUTPUT_DIR", "data/output")
-    max_tokens = int(os.getenv("MAX_TOKENS", "8192"))
 
     return AppConfig(
-        base_url=base_url,
-        model=model,
+        llm_base_url=llm_base_url,
+        llm_model=llm_model,
+        llm_api_key=llm_api_key,
+        whisper_base_url=whisper_base_url,
         transcription_model=transcription_model,
-        api_key=api_key,
+        whisper_api_key=whisper_api_key,
         temperature=float(os.getenv("TEMPERATURE", "0.2")),
-        max_tokens=max_tokens,
-        llm_max_model_len=int(os.getenv("LLM_MAX_MODEL_LEN", str(DEFAULT_LLM_MAX_MODEL_LEN))),
         request_timeout=float(
-            os.getenv("GEMINI_REQUEST_TIMEOUT")
+            os.getenv("LLM_REQUEST_TIMEOUT")
             or os.getenv("VLLM_REQUEST_TIMEOUT")
+            or os.getenv("WHISPER_REQUEST_TIMEOUT")
             or "600"
         ),
-        template_conversion_max_input_chars=_template_conversion_max_input_chars(max_tokens),
         template_conversion_sources_dir=resolve_dir(
             "TEMPLATE_CONVERSION_SOURCES_DIR",
             "data/template_sources",
@@ -113,14 +106,3 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         mongodb_tasks_collection=os.getenv("MONGODB_TASKS_COLLECTION", "tasks"),
         max_concurrent_generations=int(os.getenv("MAX_CONCURRENT_GENERATIONS", "1")),
     )
-
-
-def _template_conversion_max_input_chars(max_tokens: int) -> int:
-    explicit = os.getenv("TEMPLATE_CONVERSION_MAX_INPUT_CHARS")
-    if explicit:
-        return max(1024, int(explicit))
-
-    max_model_len = int(os.getenv("LLM_MAX_MODEL_LEN", str(DEFAULT_LLM_MAX_MODEL_LEN)))
-    prompt_overhead_tokens = 2400
-    input_tokens = max(1024, max_model_len - max_tokens - prompt_overhead_tokens)
-    return int(input_tokens * 3.0)

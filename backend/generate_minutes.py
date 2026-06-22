@@ -43,7 +43,7 @@ def pick_single_file(directory: Path, label: str, explicit: Path | None = None) 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate meeting minutes from a transcript and template via Google Gemini."
+        description="Generate meeting minutes from a transcript and template."
     )
     parser.add_argument(
         "--transcript-file",
@@ -92,8 +92,8 @@ def main() -> int:
 
     print(f"Transcript: {transcript_path}")
     print(f"Template:   {template_path}")
-    print(f"Model:      {config.model}")
-    print(f"Endpoint:   {config.base_url}")
+    print(f"Model:      {config.llm_model}")
+    print(f"Endpoint:   {config.llm_base_url}")
     print("Generating meeting minutes...")
 
     service = GenerationService(config)

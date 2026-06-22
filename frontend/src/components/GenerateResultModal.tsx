@@ -80,7 +80,7 @@ export function GenerateResultModal({
 
         {loading && (
           <div className="px-6 py-8 text-center">
-            <p className="mb-5 text-stone-600">Calling Gemini… this may take a minute.</p>
+            <p className="mb-5 text-stone-600">Generating… this may take a minute.</p>
             <div
               className="h-[0.45rem] overflow-hidden rounded-full bg-stone-200"
               role="progressbar"

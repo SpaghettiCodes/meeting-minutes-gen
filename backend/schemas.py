@@ -55,14 +55,6 @@ class ConvertTemplateResponse(BaseModel):
     message: str = "Template generated successfully."
 
 
-class HealthResponse(BaseModel):
-    status: str
-    llm_model: str
-    llm_provider: str
-    transcription_model: str
-    transcription_provider: str
-
-
 class ExportRequest(BaseModel):
     content: str = Field(..., description="Markdown content to export.")
     filename: str = Field(..., description="Base filename used for the download.")

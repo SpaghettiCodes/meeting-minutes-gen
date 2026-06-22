@@ -9,7 +9,12 @@ import pypandoc
 from backend.models.config import AppConfig
 from backend.models.domain import TextDocument
 from backend.services.exceptions import ExternalAPIError, ValidationError
-from backend.services.gemini.client import build_chat_client
+from backend.services.llm.client import build_chat_client
+from backend.services.llm.completion import (
+    chat_completion_text,
+    create_chat_completion,
+    is_retriable_length_error,
+)
 from backend.services.templates.cleanup import ensure_batch_end_marker, strip_batch_markers
 from backend.services.templates.document_chunks import split_document_structured
 from backend.services.templates.preprocess import preprocess_extracted_text
@@ -21,6 +26,7 @@ from backend.services.templates.prompts import (
 
 TEMPLATE_SOURCE_EXTENSIONS = {".docx", ".pdf"}
 _CHUNK_PROMPT_OVERHEAD_CHARS = 1200
+_FALLBACK_CHUNK_CHARS = 12_000
 _PRIOR_TEMPLATE_MAX_CHARS = 48_000
 
 
@@ -76,17 +82,15 @@ class TemplateConversionService:
         *,
         page_texts: list[str] | None,
     ) -> str:
-        max_input_chars = self._config.template_conversion_max_input_chars
-
-        if len(extracted) <= max_input_chars:
-            try:
-                return self._generate_llm_template(
-                    self._prepare_llm_source(extracted),
-                    user_prompt_template=TEMPLATE_CONVERSION_USER,
-                )
-            except Exception as exc:
-                if not self._is_context_length_error(exc):
-                    raise ExternalAPIError(f"Error calling Gemini API: {exc}") from exc
+        prepared = self._prepare_llm_source(extracted)
+        try:
+            return self._generate_llm_template(
+                prepared,
+                user_prompt_template=TEMPLATE_CONVERSION_USER,
+            )
+        except Exception as exc:
+            if not is_retriable_length_error(exc):
+                raise ExternalAPIError(f"Error calling LLM API: {exc}") from exc
 
         return self._convert_in_chunks(extracted, page_texts=page_texts)
 
@@ -96,10 +100,9 @@ class TemplateConversionService:
         *,
         page_texts: list[str] | None,
     ) -> str:
-        max_input_chars = self._config.template_conversion_max_input_chars
         per_chunk_max = max(
             1024,
-            max_input_chars - _CHUNK_PROMPT_OVERHEAD_CHARS,
+            _FALLBACK_CHUNK_CHARS - _CHUNK_PROMPT_OVERHEAD_CHARS,
         )
         structured_chunks = split_document_structured(
             extracted,
@@ -142,7 +145,7 @@ class TemplateConversionService:
                 templates.append(batch)
             except Exception as exc:
                 raise ExternalAPIError(
-                    f"Error calling Gemini API for chunk {index}/{total}: {exc}"
+                    f"Error calling LLM API for chunk {index}/{total}: {exc}"
                 ) from exc
 
         return self._aggregate_chunk_templates(templates)
@@ -192,20 +195,17 @@ class TemplateConversionService:
                 document_content=document_content,
             )
 
-        response = client.chat.completions.create(
-            model=self._config.model,
+        response = create_chat_completion(
+            client,
+            model=self._config.llm_model,
             messages=[
                 {"role": "system", "content": TEMPLATE_CONVERSION_SYSTEM},
                 {"role": "user", "content": user_prompt},
             ],
             temperature=min(self._config.temperature, 0.1),
-            max_tokens=self._config.max_tokens,
         )
 
-        content = response.choices[0].message.content
-        if not content:
-            raise ExternalAPIError("Model returned an empty response.")
-        return self._clean_output(content.strip())
+        return self._clean_output(chat_completion_text(response))
 
     @staticmethod
     def _format_prior_template(prior_batches: list[str]) -> str:
@@ -244,21 +244,6 @@ class TemplateConversionService:
             if strip_batch_markers(part.strip())
         ]
         return "\n\n".join(parts)
-
-    @staticmethod
-    def _is_context_length_error(exc: Exception) -> bool:
-        message = str(exc).lower()
-        return any(
-            marker in message
-            for marker in (
-                "maximum context length",
-                "context length",
-                "too many tokens",
-                "max_model_len",
-                "token limit",
-                "context window",
-            )
-        )
 
     @staticmethod
     def _clean_output(content: str) -> str:

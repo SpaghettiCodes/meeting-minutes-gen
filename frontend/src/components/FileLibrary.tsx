@@ -21,7 +21,7 @@ const LIBRARY_COPY: Record<
 > = {
   transcripts: {
     title: "Transcripts",
-    subtitle: "Upload text transcripts or transcribe video/audio with Gemini.",
+    subtitle: "Upload text transcripts or transcribe video/audio with local Whisper.",
     uploadLabel: "Upload text",
     empty: "No transcripts yet. Upload text or transcribe a meeting recording.",
   },

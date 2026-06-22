@@ -37,14 +37,6 @@ export interface ConvertTemplateResponse {
   message: string;
 }
 
-export interface HealthResponse {
-  status: string;
-  llm_model: string;
-  llm_provider: string;
-  transcription_model: string;
-  transcription_provider: string;
-}
-
 export type LibraryKind = "transcripts" | "templates" | "minutes";
 
 export type ExportFormat = "docx" | "pdf";

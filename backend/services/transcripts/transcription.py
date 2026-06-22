@@ -4,8 +4,7 @@ import tempfile
 from pathlib import Path
 
 import ffmpeg
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 from backend.models.config import AppConfig
 from backend.models.domain import TextDocument
@@ -14,26 +13,6 @@ from backend.services.exceptions import ExternalAPIError, ValidationError
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".webm", ".avi", ".mpeg", ".mpg"}
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".opus"}
 MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
-
-_AUDIO_MIME_TYPES = {
-    ".wav": "audio/wav",
-    ".mp3": "audio/mpeg",
-    ".m4a": "audio/mp4",
-    ".flac": "audio/flac",
-    ".ogg": "audio/ogg",
-    ".aac": "audio/aac",
-    ".opus": "audio/opus",
-}
-
-_TRANSCRIPTION_PROMPT = """\
-Transcribe this audio verbatim.
-
-Rules:
-- Output plain text only.
-- If multiple speakers are clearly distinct, label them Speaker 1, Speaker 2, etc.
-- Do not summarize or omit spoken content.
-- Do not add commentary before or after the transcript.
-"""
 
 
 class TranscriptionService:
@@ -68,7 +47,9 @@ class TranscriptionService:
             except RuntimeError as exc:
                 raise ExternalAPIError(str(exc)) from exc
             except Exception as exc:
-                raise ExternalAPIError(f"Error calling Gemini transcription API: {exc}") from exc
+                raise ExternalAPIError(
+                    f"Error calling Whisper transcription API: {exc}"
+                ) from exc
 
         output_name = f"{Path(filename).stem}.txt"
         return TextDocument(name=output_name, content=content)
@@ -78,9 +59,9 @@ class TranscriptionService:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 audio_path = Path(tmp_dir) / "audio.wav"
                 self._extract_audio(media_path, audio_path)
-                return self._call_gemini(audio_path)
+                return self._call_whisper(audio_path)
 
-        return self._call_gemini(media_path)
+        return self._call_whisper(media_path)
 
     def _extract_audio(self, video_path: Path, audio_path: Path) -> None:
         try:
@@ -101,27 +82,22 @@ class TranscriptionService:
             detail = detail or "Unknown ffmpeg error"
             raise RuntimeError(f"Failed to extract audio from video: {detail}") from exc
 
-    def _call_gemini(self, audio_path: Path) -> str:
-        if not self._config.api_key:
-            raise ExternalAPIError("GEMINI_API_KEY is not set.")
-
-        mime_type = _AUDIO_MIME_TYPES.get(audio_path.suffix.lower(), "audio/wav")
-        audio_bytes = audio_path.read_bytes()
-        if not audio_bytes:
+    def _call_whisper(self, audio_path: Path) -> str:
+        if not audio_path.is_file() or audio_path.stat().st_size == 0:
             raise RuntimeError("Audio file is empty.")
 
-        client = genai.Client(api_key=self._config.api_key)
-        response = client.models.generate_content(
-            model=self._config.transcription_model,
-            contents=types.Content(
-                role="user",
-                parts=[
-                    types.Part.from_text(text=_TRANSCRIPTION_PROMPT),
-                    types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
-                ],
-            ),
+        client = OpenAI(
+            api_key=self._config.whisper_api_key or "not-needed",
+            base_url=self._config.whisper_base_url.rstrip("/"),
+            timeout=self._config.request_timeout,
         )
+        with audio_path.open("rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model=self._config.transcription_model,
+                file=audio_file,
+            )
+
         text = (response.text or "").strip()
         if not text:
-            raise RuntimeError("Gemini returned an empty transcript.")
+            raise RuntimeError("Whisper returned an empty transcript.")
         return text

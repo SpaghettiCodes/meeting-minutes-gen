@@ -4,7 +4,6 @@ import type {
   ExportFormat,
   FileMetadata,
   GenerateResponse,
-  HealthResponse,
   LibraryKind,
   TaskDetail,
   TaskSummary,
@@ -46,10 +45,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(detail);
   }
   return response.json() as Promise<T>;
-}
-
-export function getHealth(): Promise<HealthResponse> {
-  return request<HealthResponse>("/api/health");
 }
 
 export function listFiles(kind: LibraryKind): Promise<FileMetadata[]> {

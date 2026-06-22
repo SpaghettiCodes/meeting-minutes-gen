@@ -7,7 +7,6 @@ from fastapi import Depends, Request
 from backend.models.config import ENV_FILE, AppConfig, load_config
 from backend.services.export import ExportService
 from backend.services.generation import GenerationService
-from backend.services.health import HealthService
 from backend.services.minutes import MinutesService
 from backend.services.tasks import TaskService
 from backend.services.templates import TemplateService
@@ -41,12 +40,6 @@ def get_generation_service(
     config: AppConfig = Depends(get_config),
 ) -> GenerationService:
     return GenerationService(config)
-
-
-def get_health_service(
-    config: AppConfig = Depends(get_config),
-) -> HealthService:
-    return HealthService(config)
 
 
 def get_export_service() -> ExportService:

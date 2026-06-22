@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 from openai import OpenAI
@@ -9,21 +8,14 @@ from backend.models.config import AppConfig
 from backend.models.domain import GeneratedMinutes
 from backend.services.exceptions import ExternalAPIError, ValidationError
 from backend.services.files.service import FileService
-from backend.services.gemini.client import build_chat_client
+from backend.services.llm.client import build_chat_client
+from backend.services.llm.completion import chat_completion_text, create_chat_completion
 from backend.services.generation.output_names import output_name_for_generation
 from backend.services.generation.prompts import (
     MEETING_FACTS_SYSTEM,
     MEETING_FACTS_USER,
     MINUTES_RENDER_SYSTEM,
     MINUTES_RENDER_USER,
-)
-
-# Conservative estimate — better to truncate early than hit context limits.
-_CHARS_PER_TOKEN = 3.0
-_COMPLETION_MARGIN_TOKENS = 384
-_TRUNCATION_NOTE = (
-    "\n\nNote: content was truncated to fit the model context window. "
-    "Use all information available in the excerpt."
 )
 
 
@@ -59,7 +51,7 @@ class GenerationService:
         try:
             content = self._generate_minutes(transcript=transcript, template=template)
         except Exception as exc:
-            raise ExternalAPIError(f"Error calling Gemini API: {exc}") from exc
+            raise ExternalAPIError(f"Error calling LLM API: {exc}") from exc
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content + "\n", encoding="utf-8")
@@ -74,145 +66,19 @@ class GenerationService:
         facts = self._extract_meeting_facts(client, transcript)
         return self._render_minutes(client, template=template, facts=facts)
 
-    def _max_prompt_tokens(self) -> int:
-        return max(
-            512,
-            self._config.llm_max_model_len
-            - self._config.max_tokens
-            - _COMPLETION_MARGIN_TOKENS,
-        )
-
-    @staticmethod
-    def _estimate_tokens(text: str) -> int:
-        return max(1, int(len(text) / _CHARS_PER_TOKEN))
-
-    @staticmethod
-    def _truncate_text_to_tokens(text: str, max_tokens: int) -> tuple[str, bool]:
-        max_chars = max(0, int(max_tokens * _CHARS_PER_TOKEN))
-        if len(text) <= max_chars:
-            return text, False
-        return text[:max_chars], True
-
-    def _fit_variable_content(
-        self,
-        *,
-        system_prompt: str,
-        build_user_prompt: Callable[[str], str],
-        content: str,
-    ) -> tuple[str, bool]:
-        max_prompt_tokens = self._max_prompt_tokens()
-        system_tokens = self._estimate_tokens(system_prompt)
-        wrapper_tokens = self._estimate_tokens(build_user_prompt(""))
-        variable_budget = max(
-            128,
-            max_prompt_tokens - system_tokens - wrapper_tokens,
-        )
-
-        working, truncated = self._truncate_text_to_tokens(content, variable_budget)
-        user_prompt = build_user_prompt(working)
-        total_tokens = system_tokens + self._estimate_tokens(user_prompt)
-
-        while total_tokens > max_prompt_tokens and len(working) > 256:
-            variable_budget = max(128, int(variable_budget * 0.85))
-            working, was_truncated = self._truncate_text_to_tokens(
-                content,
-                variable_budget,
-            )
-            truncated = truncated or was_truncated
-            user_prompt = build_user_prompt(working)
-            total_tokens = system_tokens + self._estimate_tokens(user_prompt)
-
-        return user_prompt, truncated
-
-    def _fit_two_part_content(
-        self,
-        *,
-        system_prompt: str,
-        build_user_prompt: Callable[[str, str], str],
-        primary: str,
-        secondary: str,
-    ) -> tuple[str, bool]:
-        max_prompt_tokens = self._max_prompt_tokens()
-        system_tokens = self._estimate_tokens(system_prompt)
-        wrapper_tokens = self._estimate_tokens(build_user_prompt("", ""))
-        remaining = max(256, max_prompt_tokens - system_tokens - wrapper_tokens)
-
-        primary_tokens = self._estimate_tokens(primary)
-        secondary_tokens = self._estimate_tokens(secondary)
-        truncated = False
-
-        if primary_tokens + secondary_tokens <= remaining:
-            fitted_primary, fitted_secondary = primary, secondary
-        elif primary_tokens >= remaining:
-            fitted_primary, truncated = self._truncate_text_to_tokens(
-                primary,
-                remaining,
-            )
-            fitted_secondary = ""
-        else:
-            fitted_primary = primary
-            secondary_budget = remaining - primary_tokens
-            fitted_secondary, truncated = self._truncate_text_to_tokens(
-                secondary,
-                secondary_budget,
-            )
-
-        user_prompt = build_user_prompt(fitted_primary, fitted_secondary)
-        total_tokens = system_tokens + self._estimate_tokens(user_prompt)
-        while total_tokens > max_prompt_tokens and len(fitted_secondary) > 128:
-            secondary_budget = max(
-                64,
-                self._estimate_tokens(fitted_secondary) - 256,
-            )
-            fitted_secondary, was_truncated = self._truncate_text_to_tokens(
-                secondary,
-                secondary_budget,
-            )
-            truncated = truncated or was_truncated
-            user_prompt = build_user_prompt(fitted_primary, fitted_secondary)
-            total_tokens = system_tokens + self._estimate_tokens(user_prompt)
-
-        return user_prompt, truncated
-
     def _extract_meeting_facts(self, client: OpenAI, transcript: str) -> str:
-        user_prompt, truncated = self._fit_variable_content(
-            system_prompt=MEETING_FACTS_SYSTEM,
-            build_user_prompt=lambda text: MEETING_FACTS_USER.format(transcript=text),
-            content=transcript,
-        )
-        if truncated:
-            user_prompt = user_prompt.replace(
-                "</transcript>",
-                f"{_TRUNCATION_NOTE}\n</transcript>",
-            )
-
         content = self._complete(
             client,
             system_prompt=MEETING_FACTS_SYSTEM,
-            user_prompt=user_prompt,
+            user_prompt=MEETING_FACTS_USER.format(transcript=transcript),
         )
         return self._clean_output(content)
 
     def _render_minutes(self, client: OpenAI, *, template: str, facts: str) -> str:
-        user_prompt, truncated = self._fit_two_part_content(
-            system_prompt=MINUTES_RENDER_SYSTEM,
-            build_user_prompt=lambda tmpl, notes: MINUTES_RENDER_USER.format(
-                template=tmpl,
-                facts=notes,
-            ),
-            primary=template,
-            secondary=facts,
-        )
-        if truncated:
-            user_prompt = user_prompt.replace(
-                "</notes>",
-                f"{_TRUNCATION_NOTE}\n</notes>",
-            )
-
         content = self._complete(
             client,
             system_prompt=MINUTES_RENDER_SYSTEM,
-            user_prompt=user_prompt,
+            user_prompt=MINUTES_RENDER_USER.format(template=template, facts=facts),
         )
         return self._clean_output(content)
 
@@ -226,20 +92,17 @@ class GenerationService:
         system_prompt: str,
         user_prompt: str,
     ) -> str:
-        response = client.chat.completions.create(
-            model=self._config.model,
+        response = create_chat_completion(
+            client,
+            model=self._config.llm_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             temperature=self._config.temperature,
-            max_tokens=self._config.max_tokens,
         )
 
-        content = response.choices[0].message.content
-        if not content:
-            raise ExternalAPIError("Model returned an empty response.")
-        return content.strip()
+        return chat_completion_text(response)
 
     @staticmethod
     def _clean_output(content: str) -> str:
