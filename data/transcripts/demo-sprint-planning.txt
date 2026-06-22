@@ -1,0 +1,55 @@
+============================================================
+TRANSCRIPTION REPORT WITH SPEAKER DIARIZATION
+============================================================
+Video File: demo-sprint-planning.mp4
+Model Used: whisper-small
+Detected Language: en
+Number of Speakers: 4
+Timing Format: Relative (MM:SS from start)
+============================================================
+
+TRANSCRIPTION BY SPEAKER:
+==============================
+
+[SPEAKER_01]
+(00:00 - 00:05) Good morning everyone. It is 10:00 AM on 15 April 2026.
+(00:05 - 00:10) Welcome to the Atlas Platform sprint planning meeting on Microsoft Teams.
+(00:10 - 00:15) I am Alex Chen, chairperson. Morgan Wells is taking minutes.
+(00:15 - 00:22) Attendees today are me, Jordan Lee, Sam Park, and Morgan. No apologies.
+(00:22 - 00:30) Agenda: review previous action items, discuss Q1 launch progress, assign sprint tasks, and confirm next meeting.
+
+[SPEAKER_02]
+(00:31 - 00:38) On previous actions: the API documentation draft is complete. Jordan finished it last Friday.
+(00:38 - 00:44) The staging environment upgrade is still in progress. Sam expects it done by 18 April.
+(00:44 - 00:50) The customer onboarding checklist was not started. We are carrying that forward to this sprint.
+
+[SPEAKER_01]
+(00:51 - 00:58) Thanks Jordan. So documentation is done, staging upgrade pending, onboarding checklist outstanding.
+
+[SPEAKER_03]
+(00:59 - 01:08) For launch progress: the login flow is live in staging. Password reset still needs QA sign-off.
+(01:08 - 01:16) Analytics dashboard v1 is working with sample data. Real production metrics hookup is blocked on the staging upgrade.
+(01:16 - 01:22) Marketing asked for a demo video by 25 April. That was not on our original plan.
+
+[SPEAKER_04]
+(01:23 - 01:30) I can draft the demo script by 17 April if Sam provides updated staging URLs.
+(01:30 - 01:36) Morgan will coordinate with marketing on the final cut deadline.
+
+[SPEAKER_01]
+(01:37 - 01:45) Decision: we will ship password reset to staging after QA, target 19 April, owner Sam.
+(01:45 - 01:52) Decision: defer production metrics until staging upgrade completes. Jordan owns the integration once unblocked.
+(01:52 - 02:00) Decision: approve a lightweight demo video scope. Morgan owns script review, Sam owns environment support.
+
+[SPEAKER_02]
+(02:01 - 02:08) New action item: Sam to finish staging upgrade by 18 April.
+(02:08 - 02:14) New action item: Jordan to complete customer onboarding checklist by 22 April.
+(02:14 - 02:20) New action item: Morgan to send demo script draft to marketing by 17 April.
+
+[SPEAKER_03]
+(02:21 - 02:28) Risk: if staging slips past 18 April, QA for password reset and metrics both slip one week.
+(02:28 - 02:34) Risk: marketing demo date is fixed; we may need to record against staging with mock data.
+
+[SPEAKER_01]
+(02:35 - 02:42) Next meeting is 22 April 2026 at 10:00 AM, same Teams link.
+(02:42 - 02:48) Purpose: sprint review and staging go/no-go for password reset.
+(02:48 - 02:52) Anything else? No. Meeting adjourned at 10:52 AM.

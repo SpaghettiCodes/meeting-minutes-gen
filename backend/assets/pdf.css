@@ -1,0 +1,92 @@
+@page {
+  margin: 20mm 15mm;
+}
+
+html {
+  color: #1c1917;
+  font-size: 11pt;
+}
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.65;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.25;
+  color: #134e4a;
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 1.65rem;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin: 1.25rem 0 0.65rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+}
+
+p,
+ul,
+ol {
+  margin: 0 0 0.75rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.92rem;
+  page-break-inside: avoid;
+}
+
+th,
+td {
+  border: 1px solid #d6d3d1;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th ul,
+th ol,
+td ul,
+td ol {
+  margin: 0.25rem 0;
+  padding-left: 1.1rem;
+}
+
+th li,
+td li {
+  margin-bottom: 0.15rem;
+}
+
+th {
+  background: #f5f5f4;
+  font-weight: 700;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #fafaf9;
+  border: 1px solid #e7e5e4;
+  border-radius: 0.35rem;
+  padding: 0.75rem;
+}

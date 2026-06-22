@@ -1,0 +1,788 @@
+============================================================
+TRANSCRIPTION REPORT WITH SPEAKER DIARIZATION
+============================================================
+Video File: Meeting_1.mp4
+Model Used: large-v2
+Device: CUDA
+Transcription Time: 231.68 seconds
+Diarization Time: 23.67 seconds
+Detected Language: en
+Number of Speakers: 4
+Speakers: SPEAKER_00, SPEAKER_01, SPEAKER_02, SPEAKER_03
+Timing Format: Relative (MM:SS from start)
+============================================================
+
+TRANSCRIPTION BY SPEAKER:
+==============================
+
+
+[SPEAKER_01]
+(00:00 - 00:00) here.
+(00:07 - 00:12) Okay, good afternoon to everyone. Right now it is 4.50 pm
+(00:13 - 00:17) of 25 of March of 2026 and right now we will be having the first meeting
+(00:17 - 00:20) of our second semester of the final year project.
+(00:21 - 00:24) So the meeting will be on Zoom which is here right now and I will be the
+(00:24 - 00:28) chairperson. Shi Xiang will be the minute taker and
+(00:28 - 00:31) today in this meeting the participants will
+(00:31 - 00:35) be me, Jayden Wong, Derek
+(00:35 - 00:38) and also Shi Xiang which means that there are no
+(00:38 - 00:44) apologies. So right now I will talk about
+(00:44 - 00:52) the agenda. So firstly we will review the previous action items which is
+(00:52 - 00:56) tasks that are not complete from the last semester and brought over such as
+(00:57 - 01:00) the project proposal report or the final presentation
+(01:01 - 01:04) and we will also identify any outstanding items that is carried forward to
+(01:04 - 01:08) the current semester. Next we will talk about
+(01:08 - 01:11) the development progress during the semester break
+(01:12 - 01:16) and we will talk about what we have achieved in terms of hardware, software
+(01:16 - 01:19) and also front end and back end setup.
+(01:21 - 01:24) Next we will talk about what we have done
+(01:24 - 01:28) during the semester currently. So from week one
+(01:28 - 01:33) to week three in terms of item number four which is cluster
+(01:33 - 01:40) hardware and network, item number five which is cluster software setup and also
+(01:40 - 01:44) item number six which is the back end and front end and
+(01:44 - 01:48) also the dashboard setup for the HPC system.
+(01:49 - 01:53) And after that we will start to allocate more tasks and also
+(01:53 - 01:56) plan the next sprints for our future development
+(01:57 - 02:00) and then finally we will talk about the risks and issues that we
+(02:00 - 02:03) have faced for the past three weeks and also
+(02:03 - 02:10) end with some action items and also further business. So let's begin.
+(02:12 - 02:15) So first we will review our previous action items
+(02:16 - 02:19) and we will try to identify any outstanding items that are carried
+(02:19 - 02:24) forward to current semester. So anyone has any
+(02:25 - 02:29) opinions about the tasks that we have done last semester
+(02:29 - 02:32) and whether that we have completed them or not?
+
+[SPEAKER_03]
+(02:34 - 02:40) Okay Derek, passing on to you. Yep thank you Lai An. So previous semester
+(02:41 - 02:44) we mainly did our documentation and also proposal
+(02:45 - 02:49) and also our pitch deck and all have been verified
+(02:50 - 02:53) by our supervisor Dr Vishnu and our lecturer
+(02:54 - 02:59) and we got our grades for it. So this semester it will be mainly focusing
+(02:59 - 03:03) on implementation wise and any outstanding items
+(03:03 - 03:11) actually no, most of it has been completed and now this semester will be
+(03:11 - 03:14) purely focusing on development, implementation and integration
+(03:15 - 03:19) and one thing will be we are slowly completing
+(03:19 - 03:23) the tasks that we planned on our Gantt chart
+(03:23 - 03:28) and everything is following the expected timeline.
+(03:28 - 03:31) So that's about it for our previous action item
+(03:32 - 03:33) and pass back to Lai An.
+
+[SPEAKER_01]
+(03:36 - 03:42) Okay thank you Derek. So just to align, we already have finished all our
+(03:42 - 03:45) tasks from previous semesters and there are no
+(03:45 - 03:48) outstanding items carried into the current semester
+(03:48 - 03:51) except for the development of our system.
+(03:52 - 03:59) So next will be the progress review for items that we have done across the
+(03:59 - 04:03) semester break. So we will talk about what we have done
+(04:03 - 04:06) for the hardware, the software and also
+(04:06 - 04:10) the system setup. So I'll pass it back to Derek first
+(04:10 - 04:14) because he is the one that's the most responsible for our hardware setup.
+
+[SPEAKER_03]
+(04:16 - 04:21) All right thank you Lai An. So during our semester break we actually work
+(04:21 - 04:26) on some research and development regarding our final year project
+(04:26 - 04:30) and mainly for hardware side we clustered up our laptops together
+(04:30 - 04:36) connected to a central switch and that become the foundation and also
+(04:36 - 04:41) the base for Lai An and Jayden and also Chua
+(04:41 - 04:45) to develop the software and also the Ansible script
+(04:45 - 04:51) required to deploy it smoothly and without any hiccups.
+(04:52 - 04:56) So passing on the initial software setup back to Lai An.
+
+[SPEAKER_01]
+(04:59 - 05:06) Okay thank you Derek. So we have done our initial experimentation using our own
+(05:06 - 05:11) software which is our laptops and using the switch that was borrowed
+(05:11 - 05:16) by Dr Vishnu. We experimented with different kinds
+(05:16 - 05:21) of cluster software and we tried to develop our own
+(05:22 - 05:26) software deployment scheme. So for the software we have done
+(05:27 - 05:30) setup and research. I'm going to talk about it.
+(05:30 - 05:37) So what we have done is we have initially set up a SLURM cluster
+(05:37 - 05:42) and with OpenMPI as well which is the two of the most important software in a
+(05:42 - 05:46) HPC cluster and during the semester break.
+(05:47 - 05:51) And after that we will be moving on to more advanced software
+(05:51 - 05:58) such as BeeGFS during the semester. So for the repository setup I'll pass it
+(05:58 - 06:01) on to Chua to talk about the front end and also the back end.
+
+[SPEAKER_00]
+(06:04 - 06:07) Thank you Lai An. So for the repository setup
+(06:07 - 06:13) I have set up two, three repl. One is the back end, the front end and also the
+(06:13 - 06:17) Ansible development scripts. For back end as previously discussed we
+(06:17 - 06:21) are using FastAPI and for front end we will be using
+(06:21 - 06:25) Angular and that's about it. I already set up
+(06:25 - 06:29) the initialization and development can soon begin for the
+(06:32 - 06:33) two parts.
+
+[SPEAKER_01]
+(06:34 - 06:38) Yeah that's all for me. Okay thank you Chua.
+(06:38 - 06:42) Next we will talk about the cluster hardware and also the network setup.
+(06:42 - 06:46) This means that what we have done from week one to week three
+(06:46 - 06:50) currently and I'll pass it to Derek to talk about this.
+ 
+[SPEAKER_03]
+(06:52 - 06:59) All right thank you Lai An. So for in Sem development I'll first talk
+(06:59 - 07:04) about our cluster hardware on. Right now we got five workstation in
+(07:04 - 07:07) total. Each workstation is configured with
+(07:08 - 07:15) eight cores and 16 threads of Xeon CPUs and also Quadro P5000 with 64 gigs of RAM
+(07:15 - 07:21) and also all in all 2.5 terabytes worth of storage per workstation.
+(07:22 - 07:29) And we cluster up everything, all five of the workstation with a FortiNet
+(07:29 - 07:32) switch and also FortiGate firewall
+(07:33 - 07:37) serving as the network address translation
+(07:38 - 07:41) to allow external internet access to all workstation.
+(07:42 - 07:49) And there is two types of connection available for our workstation.
+(07:49 - 07:54) Primarily the internet connection and also our SFP connection.
+(07:54 - 07:58) And the internet connection will serve as the management
+(07:58 - 08:03) and also the internet access for all workstation.
+(08:03 - 08:08) So the head node and the two cluster node and the two storage nodes all get
+(08:08 - 08:15) internet access. Whereas for the SFP, since we only have four SFP port present
+(08:15 - 08:21) on our FortiNet switch, we only can give them to the two
+(08:21 - 08:26) cluster, the two storage cluster and also
+(08:27 - 08:34) the two processing cluster nodes. All right so next SFP network card
+(08:34 - 08:40) and cables. Cable just arrived today and SFP network card is arriving tomorrow.
+(08:40 - 08:47) So the installation for that will begin either on end of this week or
+(08:47 - 08:54) early next week. And also moving on our address architecture for our IP.
+(08:54 - 08:59) There is a two subnet for both Ethernet and also SFP.
+(08:59 - 09:11) The internet will run on 192.168.10 subnet and also the SFP will run on 192.168.100
+(09:11 - 09:15) subnet and all is using the dash, I mean the
+(09:15 - 09:21) slash 28 subnet mask. And all in all this ensures that there
+(09:21 - 09:25) is no mismatch or there is no crossover for the IP.
+(09:25 - 09:32) Everything is designed to be clustered up
+(09:33 - 09:37) so that we can get the maximum performance.
+(09:37 - 09:45) So the full cluster deployment will be ready at the latest will be next
+(09:45 - 09:47) week. The earliest will be end of this week.
+(09:48 - 09:52) And that's about it from me. So I'll pass it back to Lai An to talk
+(09:52 - 09:56) about the cluster software setup progress.
+
+[SPEAKER_01]
+(09:58 - 10:02) Okay thank you Derek for being so thorough with the cluster hardware and
+(10:02 - 10:05) network setup update. Just to align everyone,
+(10:07 - 10:11) the important part is that the SFP network cards will be coming next week
+(10:11 - 10:14) and after it arrives we can finalize the
+(10:14 - 10:20) development of the cluster hardware and setup. So next we'll talk about the
+(10:20 - 10:24) software setup progress which is championed by
+(10:24 - 10:28) Chua. I'll pass it on to Chua to talk about
+
+[SPEAKER_00]
+(10:28 - 10:34) the software setup. All right thank you Lai An. So the current
+(10:34 - 10:39) hardware is already installed with the Ubuntu server and the static IP is
+(10:39 - 10:43) also set up by Derek already and all that's left is to set up SSH
+(10:43 - 10:47) into the machines in order to run the Ansible scripts.
+(10:47 - 10:53) So for Slurm, Munch and Connie's setup I have already written the Ansible
+(10:53 - 10:59) script and it's already tested on my personal mini cluster and all that's
+(10:59 - 11:04) left is to test it on the our main cluster. And also
+(11:04 - 11:12) the script also sets up the OpenMPI and that's all. It sets up OpenMPI
+(11:12 - 11:15) and different versions. After this I will research on how to
+(11:15 - 11:20) set up Lmod and also Prometheus and Grafana and I will also
+(11:21 - 11:24) prepare the Ansible script for it. For BeeGFS I believe
+(11:24 - 11:29) Lai An is in charge of it as well as the development of the Ansible scripts
+(11:29 - 11:31) and yeah that's all for me.
+
+[SPEAKER_01]
+(11:33 - 11:38) Yeah thank you Chua. As he said I'm in charge of the BeeGFS
+(11:39 - 11:42) writing of the scripts and also the deployment. So currently the script is
+(11:42 - 11:48) being written and it is in progress and we will target to have it by next week.
+(11:50 - 11:59) So furthermore we are also working on CUDA as well as PyTorch and finally
+(12:00 - 12:05) Apache Spark and that will be the future software that we have to set up after
+(12:05 - 12:10) Lmod and Prometheus and Grafana has been set up and deployed.
+(12:13 - 12:20) So cluster software setup is doing good for now and we will be progressing steadily.
+(12:21 - 12:27) So next let's talk about the development of our HPC system which involves the back-end
+(12:27 - 12:31) and the front-end dashboard and also the front-end landing page.
+(12:32 - 12:34) I will pass this on to Jayden.
+
+[SPEAKER_02]
+(12:35 - 12:40) Okay so right now since we are still in development for the whole hardware part
+(12:40 - 12:45) and also some software part, back-end is still pending status. Repository has been confirmed.
+(12:46 - 12:52) So I'll mainly talk about the front-end for now. Okay so I will share screen.
+
+[SPEAKER_01]
+(12:55 - 12:56) Okay go ahead.
+
+[SPEAKER_02]
+(13:00 - 13:02) Can y'all see my screen right?
+
+[SPEAKER_03]
+(13:04 - 13:04) Yeah.
+
+[SPEAKER_02]
+(13:05 - 13:11) All right okay so I think I'll start with the original plan that we have.
+(13:11 - 13:18) This was a sample I've done before about how a file management system kind of looks like.
+(13:19 - 13:24) So why we need this was because students will upload their file and we'll let them
+(13:25 - 13:28) process the file and then the output will be something like this.
+(13:28 - 13:30) So they upload a file and then we start.
+(13:30 - 13:36) So after that Lai An and I worked on this. Lai An mainly worked on this dashboard first.
+(13:36 - 13:40) So how it looked like. He drew everything himself.
+(13:42 - 13:47) And as I was developing the upload page I realized that we could have done it differently.
+(13:48 - 13:50) So we started on a new design.
+(13:51 - 13:56) Okay so we did this one.
+(13:56 - 14:00) So this is like a sample working example on how the website will look.
+(14:03 - 14:06) Okay like you can see the active jobs and the home page.
+(14:07 - 14:13) The utilization and this is the upload page which is based on the idea previously.
+(14:14 - 14:18) And then they can do their own changing or customization.
+(14:19 - 14:21) Then their history and then their resources.
+(14:23 - 14:25) And all these are extra features.
+(14:26 - 14:33) And since we don't we do the main function first there could be other features updated.
+(14:34 - 14:38) So this will be changed as we continue venturing on how we want to
+(14:38 - 14:41) add extra features that will be more convenient.
+(14:42 - 14:46) So this is the landing page also that Lai An developed.
+(14:48 - 14:51) Yeah so this is a rough idea on how it should look like.
+(14:51 - 14:58) And how we can connect each other like the landing page and this temporarily working page.
+(14:59 - 15:03) Yeah I'll pass it back to Lai An.
+
+[SPEAKER_01]
+(15:05 - 15:10) Okay thank you Jayden. Let me reshare my screen.
+(15:19 - 15:22) Okay so to summarize what Jayden said just now.
+(15:23 - 15:28) The backend cannot be started until the cluster is deployed.
+(15:29 - 15:35) And so we are currently focusing on the front end for the landing page and also the dashboard.
+(15:36 - 15:40) And we already have a working prototype for the dashboard in terms of frontend.
+(15:40 - 15:44) And also a rough design for the landing page.
+(15:46 - 15:52) Okay so let's move on to the task allocation and also the sprint planning.
+(15:52 - 15:57) So we need to allocate tasks for hardware deployment,
+(15:57 - 16:02) for software deployment and also for the backend and frontend development.
+(16:03 - 16:09) So first things first is for the hardware deployment side.
+(16:11 - 16:19) So since the SFP plus network cards are going to arrive around in a few days.
+(16:20 - 16:29) Can we task Derek on this since he has been already doing the hardware for the most part.
+(16:30 - 16:37) And we will task him with setting up the SFP plus network cards and
+(16:37 - 16:40) connecting all the machines together.
+(16:41 - 16:42) What are you guys' opinions?
+
+[SPEAKER_02]
+(16:44 - 16:46) Yeah I think he has the most experience so far.
+
+[SPEAKER_00]
+(16:47 - 16:48) Sounds good to me.
+
+[SPEAKER_01]
+(16:48 - 16:58) Yeah so how long do you think you need to finish this Derek?
+
+[SPEAKER_03]
+(16:58 - 17:02) All right so
+(17:04 - 17:10) okay for our SFP plus mainly there's two main goals that we have to achieve.
+(17:11 - 17:17) One will be installation we have to plug it in and also ensure that the firmware
+(17:18 - 17:21) is updated to the latest version.
+(17:22 - 17:26) So the firmware flashing that would take maybe one to two days at most.
+(17:27 - 17:30) If there's no any unexpected errors.
+(17:30 - 17:34) And then another one will be the switch configuration.
+(17:35 - 17:41) So the switch configuration we have to set up a separate VLAN and also assign IP
+(17:42 - 17:45) each of the SFP connection.
+(17:46 - 17:48) So that one will take maybe another day.
+(17:49 - 17:54) So all in all I was expecting around three working days.
+
+[SPEAKER_01]
+(17:56 - 18:04) Okay so can we aim to finish this by maybe because today's Wednesday right?
+(18:05 - 18:09) So can we finish this by Tuesday next week?
+(18:10 - 18:12) Assuming that the cards come.
+
+[SPEAKER_03]
+(18:13 - 18:18) Okay assuming the cards come tomorrow I would think that
+(18:21 - 18:22) Wednesday.
+(18:23 - 18:26) Yeah next week Wednesday.
+
+[SPEAKER_01]
+(18:26 - 18:28) Okay that'll be good.
+(18:29 - 18:31) So let's move on to the software setup.
+(18:32 - 18:41) So for me I will try to finish BeeGFS by also next week Wednesday.
+(18:42 - 18:48) This is to ensure that we can progress to other software smoothly and we don't
+(18:49 - 18:53) block any software from being researched and developed.
+(18:56 - 19:06) And also for Chua, do you think you can move on to either Lmod or probably TS and Grafana?
+
+[SPEAKER_00]
+(19:08 - 19:10) Yeah I should be able to move on.
+(19:11 - 19:17) I foresee that I should be able to finish Lmod by maybe end of this week.
+(19:18 - 19:20) And for TS and Grafana I'll try to finish by next week.
+(19:20 - 19:21) Tuesday.
+(19:21 - 19:22) Would that be okay?
+
+[SPEAKER_01]
+(19:23 - 19:28) Uh yeah I think both is fine.
+(19:29 - 19:39) Lmod you can I guess we can set it to be for this Sunday so you have more time to finish it up.
+(19:39 - 19:45) And for Prometheus we can set it to maybe next week Thursday.
+(19:46 - 19:46) Would that be good?
+
+[SPEAKER_00]
+(19:47 - 19:49) Yeah sure that works also.
+
+[SPEAKER_01]
+(19:50 - 19:52) All right that's good.
+(19:52 - 19:56) Next up is the front-end UI.
+(19:56 - 20:07) So since the dashboard UI is somewhat done but we still have the landing pages UI to do.
+(20:08 - 20:14) So there's two currently two tasks which is developing the front-end UI for the landing page
+(20:14 - 20:21) and also developing the UI for the dashboard because we are doing it in
+(20:21 - 20:28) Angular so we have to convert the dashboard's functional prototype into Angular instead.
+(20:29 - 20:35) So Jayden I think we should focus on the dashboard's development first.
+(20:36 - 20:44) But this is quite a big task so I think we need to split this up into smaller sprints.
+(20:44 - 20:46) As you say.
+(20:48 - 21:02) So I think one good task delegation is to have to complete one page like one web pages
+(21:05 - 21:06) front-end code per week.
+(21:07 - 21:12) So like as you showed us now there was like five pages inside the dashboard
+(21:12 - 21:15) which is like the home page the history and all those.
+(21:16 - 21:20) So a good target will be one page per week.
+(21:21 - 21:22) What do you think?
+
+[SPEAKER_02]
+(21:22 - 21:23) I think that works fine.
+(21:23 - 21:29) I mean right now since we have a rough idea of what we can produce already should be doable.
+(21:31 - 21:32) We can proceed with that.
+
+[SPEAKER_01]
+(21:33 - 21:41) Okay so we will set a milestone of one to two pages depending on your availability per week.
+(21:41 - 21:50) It will target the dashboard's front-end to be done in about three or four weeks.
+(21:51 - 21:52) All right?
+
+[Unknown]
+(21:52 - 21:53) Yeah.
+
+[SPEAKER_01]
+(21:53 - 21:55) Okay so that's good.
+(21:56 - 22:03) Let's move on to risk and any potential issues that have arised during our development.
+(22:03 - 22:05) So I'll open the floor to everyone.
+(22:06 - 22:09) Anyone wants to talk about any issues they face they can go ahead.
+
+[SPEAKER_02]
+(22:13 - 22:20) I think Derek you can talk to about the shipment and also the possible hardware
+(22:20 - 22:24) issues that we have or we already had and could occur again.
+
+[Unknown]
+(22:25 - 22:25) 
+
+[SPEAKER_03]
+(22:25 - 22:26) All right.
+(22:26 - 22:27) Thank you, Jayden.
+(22:28 - 22:33) So potential risk will be the delay for delivery.
+(22:33 - 22:39) So if let's say Touchwood our network card doesn't come in time by this week
+(22:40 - 22:50) we might have to postpone the final handover for my hardware site to next week Friday.
+(22:51 - 22:57) Yeah assuming that you know the delivery people don't work on Saturday and Sundays.
+(22:57 - 23:05) And also integration issues since our network card is not the latest version
+(23:05 - 23:13) there might be some compatibility issues that we have to factor in because we haven't tested it.
+(23:14 - 23:22) So you have to give me some time to test and ensure that all connection is running at the
+(23:22 - 23:26) full 10 gigabits speed that we are expecting.
+(23:26 - 23:30) So that's about it from my side, hardware side.
+(23:30 - 23:38) So I'll pass back to maybe Lai An or Chua to talk about software or maybe Jayden for front end.
+
+[SPEAKER_02]
+(23:40 - 23:45) I think we should probably talk about our current discussion with our supervisors.
+(23:46 - 23:52) So far there's any missed calls or increased features that we were not expecting
+(23:53 - 23:55) since I just talked to him just now.
+
+[SPEAKER_01]
+(23:55 - 24:06) Yeah so after we had our meetings with the supervisor twice now actually
+(24:07 - 24:15) we have identified two more main features that we have to complete that he hopes to
+(24:15 - 24:19) for us to complete in the duration of FYP.
+(24:19 - 24:27) So the first one was basically already known but he just clarified it which is to set up
+(24:27 - 24:32) Apache Spark in addition to our current software in the cluster.
+(24:34 - 24:46) And this one basically is more workload for Chua's NB side as the software setup for the HPC.
+(24:46 - 24:57) And also the second one is to set up an agentic AI cluster manager type thing with open claw.
+(24:58 - 25:04) So he wants to use an AI to manage the cluster autonomously without human,
+(25:05 - 25:08) with minimal human intervention basically.
+(25:08 - 25:13) So this probably introduces more of the technical workload and also
+(25:13 - 25:17) the time needed to complete the final year project.
+(25:17 - 25:27) So we will have to work a little bit faster so that we can complete everything that we were assigned.
+(25:30 - 25:34) So that's about it for the risk on my side.
+(25:35 - 25:37) Are there any more opinions?
+
+[SPEAKER_00]
+(25:40 - 25:42) None from my side.
+(25:43 - 25:46) There could be none for the software side also.
+
+[SPEAKER_01]
+(25:47 - 25:49) All right looks like that's all good.
+(25:51 - 25:57) So for the action items today which is basically all the tasks that is assigned to everyone today.
+(25:58 - 26:04) So firstly Derek we have assigned you for the hardware setup for SFP plus
+(26:04 - 26:06) for the network cards and also the cables.
+(26:06 - 26:13) We expect it to be done by next Wednesday assuming that the deliveries are on time.
+(26:13 - 26:17) If not that will be postponed to a further date I guess.
+(26:18 - 26:25) And then for the software deployment and research for the cluster,
+(26:26 - 26:34) we are targeting for Chua to complete the Lmod research and also HansiMoscript development by
+(26:35 - 26:41) this week's Sunday and then Prometheus and Grafana by next week's Thursday.
+(26:42 - 26:47) And for me I will complete the research and development of the script for BeeGFS
+(26:47 - 26:50) by next week's Wednesday.
+(26:52 - 26:59) So after that we will have the front-end dashboard development in Angular.
+(26:59 - 27:03) So Jayden will be doing this in a sprint-like fashion
+(27:04 - 27:09) where he will be completing around one to two pages based on his workload per week
+(27:09 - 27:15) and we are targeting for the front end of the dashboard to be completed by in three or four
+(27:15 - 27:20) weeks. So that's all for the tasks that was assigned for this meeting.
+(27:22 - 27:26) Let's move on to the other businesses that we have.
+(27:27 - 27:35) So for the supervisor feedback, all the feedback has been positive and he is still encouraging us
+(27:35 - 27:46) to work on it fully and try our best. And for the supervisor meetings, we have also scheduled it
+(27:46 - 27:56) to be also Monday 5.15 to 6.15 pm as per the arrangement in semester one which is the same
+(27:56 - 28:05) arrangement. So our next supervisor meeting will be next week's Monday.
+(28:07 - 28:11) So for additional concerns or updates,
+(28:13 - 28:17) there will not be much concern because we have discussed everything already.
+(28:18 - 28:21) Anyone have any concerns or updates to give?
+(28:25 - 28:29) Okay, looks like there are no concerns or updates.
+(28:30 - 28:35) So lastly we will talk about when we will have our next meeting.
+(28:37 - 28:44) So ideally we will have the next meeting in about a week to align our progress and also
+(28:44 - 28:52) to assign new tasks and to help with our problems.
+(28:55 - 29:00) So ideally the date will also be after the supervisor meeting on Monday.
+(29:00 - 29:08) So do you guys have any dates that you are free to do the meeting?
+(29:09 - 29:13) Preferably around Tuesday or Tuesday to Friday?
+
+[SPEAKER_02]
+(29:16 - 29:24) I'm hoping Friday since when I stay at the stay, I will be available during the afternoon time only.
+(29:25 - 29:30) After that I will not be available at night. As for Friday, I'll be free the whole day.
+
+[SPEAKER_01]
+(29:34 - 29:40) Okay, we have one vote for Friday. What about Shi Xiang and Derek?
+
+[SPEAKER_03]
+(29:44 - 29:47) Yeah, so I'm okay with Friday also.
+
+[SPEAKER_01]
+(29:49 - 29:51) Okay, what about Shi Xiang?
+
+[SPEAKER_00]
+(29:53 - 30:00) For Friday, I would be busy with my CA duties. So I will be only available on evening and night.
+(30:02 - 30:05) On Thursday, I will be free for the entire day.
+
+[SPEAKER_01]
+(30:09 - 30:15) Okay, so are you guys okay with the Friday evening since Chua is free
+(30:16 - 30:22) and also everyone else is free? Yeah, so we tenderly set it during
+(30:23 - 30:28) Friday evening next week for the second update progress update meeting.
+(30:31 - 30:38) Okay, I think that's about it for this meeting. We have achieved everything in our
+(30:39 - 30:43) meeting agenda. So I will end this meeting now. Thank you everyone for attending.
+
+[SPEAKER_02]
+(30:45 - 30:47) Thank you everyone. Thank you.
+
+[SPEAKER_01]
+(30:47 - 30:48) Bye. Thank you.
+(30:48 - 30:48) Bye.
+(30:50 - 30:57) Okay, I stopped recording already.
+
+
+============================================================
+DETAILED TIMELINE:
+============================================================
+[00:00 - 00:00] [SPEAKER_01]: here.
+[00:07 - 00:12] [SPEAKER_01]: Okay, good afternoon to everyone. Right now it is 4.50 pm
+[00:13 - 00:17] [SPEAKER_01]: of 25 of March of 2026 and right now we will be having the first meeting
+[00:17 - 00:20] [SPEAKER_01]: of our second semester of the final year project.
+[00:21 - 00:24] [SPEAKER_01]: So the meeting will be on Zoom which is here right now and I will be the
+[00:24 - 00:28] [SPEAKER_01]: chairperson. Shi Xiang will be the minute taker and
+[00:28 - 00:31] [SPEAKER_01]: today in this meeting the participants will
+[00:31 - 00:35] [SPEAKER_01]: be me, Jayden Wong, Derek
+[00:35 - 00:38] [SPEAKER_01]: and also Shi Xiang which means that there are no
+[00:38 - 00:44] [SPEAKER_01]: apologies. So right now I will talk about
+[00:44 - 00:52] [SPEAKER_01]: the agenda. So firstly we will review the previous action items which is
+[00:52 - 00:56] [SPEAKER_01]: tasks that are not complete from the last semester and brought over such as
+[00:57 - 01:00] [SPEAKER_01]: the project proposal report or the final presentation
+[01:01 - 01:04] [SPEAKER_01]: and we will also identify any outstanding items that is carried forward to
+[01:04 - 01:08] [SPEAKER_01]: the current semester. Next we will talk about
+[01:08 - 01:11] [SPEAKER_01]: the development progress during the semester break
+[01:12 - 01:16] [SPEAKER_01]: and we will talk about what we have achieved in terms of hardware, software
+[01:16 - 01:19] [SPEAKER_01]: and also front end and back end setup.
+[01:21 - 01:24] [SPEAKER_01]: Next we will talk about what we have done
+[01:24 - 01:28] [SPEAKER_01]: during the semester currently. So from week one
+[01:28 - 01:33] [SPEAKER_01]: to week three in terms of item number four which is cluster
+[01:33 - 01:40] [SPEAKER_01]: hardware and network, item number five which is cluster software setup and also
+[01:40 - 01:44] [SPEAKER_01]: item number six which is the back end and front end and
+[01:44 - 01:48] [SPEAKER_01]: also the dashboard setup for the HPC system.
+[01:49 - 01:53] [SPEAKER_01]: And after that we will start to allocate more tasks and also
+[01:53 - 01:56] [SPEAKER_01]: plan the next sprints for our future development
+[01:57 - 02:00] [SPEAKER_01]: and then finally we will talk about the risks and issues that we
+[02:00 - 02:03] [SPEAKER_01]: have faced for the past three weeks and also
+[02:03 - 02:10] [SPEAKER_01]: end with some action items and also further business. So let's begin.
+[02:12 - 02:15] [SPEAKER_01]: So first we will review our previous action items
+[02:16 - 02:19] [SPEAKER_01]: and we will try to identify any outstanding items that are carried
+[02:19 - 02:24] [SPEAKER_01]: forward to current semester. So anyone has any
+[02:25 - 02:29] [SPEAKER_01]: opinions about the tasks that we have done last semester
+[02:29 - 02:32] [SPEAKER_01]: and whether that we have completed them or not?
+[02:34 - 02:40] [SPEAKER_03]: Okay Derek, passing on to you. Yep thank you Lai An. So previous semester
+[02:41 - 02:44] [SPEAKER_03]: we mainly did our documentation and also proposal
+[02:45 - 02:49] [SPEAKER_03]: and also our pitch deck and all have been verified
+[02:50 - 02:53] [SPEAKER_03]: by our supervisor Dr Vishnu and our lecturer
+[02:54 - 02:59] [SPEAKER_03]: and we got our grades for it. So this semester it will be mainly focusing
+[02:59 - 03:03] [SPEAKER_03]: on implementation wise and any outstanding items
+[03:03 - 03:11] [SPEAKER_03]: actually no, most of it has been completed and now this semester will be
+[03:11 - 03:14] [SPEAKER_03]: purely focusing on development, implementation and integration
+[03:15 - 03:19] [SPEAKER_03]: and one thing will be we are slowly completing
+[03:19 - 03:23] [SPEAKER_03]: the tasks that we planned on our Gantt chart
+[03:23 - 03:28] [SPEAKER_03]: and everything is following the expected timeline.
+[03:28 - 03:31] [SPEAKER_03]: So that's about it for our previous action item
+[03:32 - 03:33] [SPEAKER_03]: and pass back to Lai An.
+[03:36 - 03:42] [SPEAKER_01]: Okay thank you Derek. So just to align, we already have finished all our
+[03:42 - 03:45] [SPEAKER_01]: tasks from previous semesters and there are no
+[03:45 - 03:48] [SPEAKER_01]: outstanding items carried into the current semester
+[03:48 - 03:51] [SPEAKER_01]: except for the development of our system.
+[03:52 - 03:59] [SPEAKER_01]: So next will be the progress review for items that we have done across the
+[03:59 - 04:03] [SPEAKER_01]: semester break. So we will talk about what we have done
+[04:03 - 04:06] [SPEAKER_01]: for the hardware, the software and also
+[04:06 - 04:10] [SPEAKER_01]: the system setup. So I'll pass it back to Derek first
+[04:10 - 04:14] [SPEAKER_01]: because he is the one that's the most responsible for our hardware setup.
+[04:16 - 04:21] [SPEAKER_03]: All right thank you Lai An. So during our semester break we actually work
+[04:21 - 04:26] [SPEAKER_03]: on some research and development regarding our final year project
+[04:26 - 04:30] [SPEAKER_03]: and mainly for hardware side we clustered up our laptops together
+[04:30 - 04:36] [SPEAKER_03]: connected to a central switch and that become the foundation and also
+[04:36 - 04:41] [SPEAKER_03]: the base for Lai An and Jayden and also Chua
+[04:41 - 04:45] [SPEAKER_03]: to develop the software and also the Ansible script
+[04:45 - 04:51] [SPEAKER_03]: required to deploy it smoothly and without any hiccups.
+[04:52 - 04:56] [SPEAKER_03]: So passing on the initial software setup back to Lai An.
+[04:59 - 05:06] [SPEAKER_01]: Okay thank you Derek. So we have done our initial experimentation using our own
+[05:06 - 05:11] [SPEAKER_01]: software which is our laptops and using the switch that was borrowed
+[05:11 - 05:16] [SPEAKER_01]: by Dr Vishnu. We experimented with different kinds
+[05:16 - 05:21] [SPEAKER_01]: of cluster software and we tried to develop our own
+[05:22 - 05:26] [SPEAKER_01]: software deployment scheme. So for the software we have done
+[05:27 - 05:30] [SPEAKER_01]: setup and research. I'm going to talk about it.
+[05:30 - 05:37] [SPEAKER_01]: So what we have done is we have initially set up a SLURM cluster
+[05:37 - 05:42] [SPEAKER_01]: and with OpenMPI as well which is the two of the most important software in a
+[05:42 - 05:46] [SPEAKER_01]: HPC cluster and during the semester break.
+[05:47 - 05:51] [SPEAKER_01]: And after that we will be moving on to more advanced software
+[05:51 - 05:58] [SPEAKER_01]: such as BeeGFS during the semester. So for the repository setup I'll pass it
+[05:58 - 06:01] [SPEAKER_01]: on to Chua to talk about the front end and also the back end.
+[06:04 - 06:07] [SPEAKER_00]: Thank you Lai An. So for the repository setup
+[06:07 - 06:13] [SPEAKER_00]: I have set up two, three repl. One is the back end, the front end and also the
+[06:13 - 06:17] [SPEAKER_00]: Ansible development scripts. For back end as previously discussed we
+[06:17 - 06:21] [SPEAKER_00]: are using FastAPI and for front end we will be using
+[06:21 - 06:25] [SPEAKER_00]: Angular and that's about it. I already set up
+[06:25 - 06:29] [SPEAKER_00]: the initialization and development can soon begin for the
+[06:32 - 06:33] [SPEAKER_00]: two parts.
+[06:34 - 06:38] [SPEAKER_01]: Yeah that's all for me. Okay thank you Chua.
+[06:38 - 06:42] [SPEAKER_01]: Next we will talk about the cluster hardware and also the network setup.
+[06:42 - 06:46] [SPEAKER_01]: This means that what we have done from week one to week three
+[06:46 - 06:50] [SPEAKER_01]: currently and I'll pass it to Derek to talk about this.
+[06:52 - 06:59] [SPEAKER_03]: All right thank you Lai An. So for in Sem development I'll first talk
+[06:59 - 07:04] [SPEAKER_03]: about our cluster hardware on. Right now we got five workstation in
+[07:04 - 07:07] [SPEAKER_03]: total. Each workstation is configured with
+[07:08 - 07:15] [SPEAKER_03]: eight cores and 16 threads of Xeon CPUs and also Quadro P5000 with 64 gigs of RAM
+[07:15 - 07:21] [SPEAKER_03]: and also all in all 2.5 terabytes worth of storage per workstation.
+[07:22 - 07:29] [SPEAKER_03]: And we cluster up everything, all five of the workstation with a FortiNet
+[07:29 - 07:32] [SPEAKER_03]: switch and also FortiGate firewall
+[07:33 - 07:37] [SPEAKER_03]: serving as the network address translation
+[07:38 - 07:41] [SPEAKER_03]: to allow external internet access to all workstation.
+[07:42 - 07:49] [SPEAKER_03]: And there is two types of connection available for our workstation.
+[07:49 - 07:54] [SPEAKER_03]: Primarily the internet connection and also our SFP connection.
+[07:54 - 07:58] [SPEAKER_03]: And the internet connection will serve as the management
+[07:58 - 08:03] [SPEAKER_03]: and also the internet access for all workstation.
+[08:03 - 08:08] [SPEAKER_03]: So the head node and the two cluster node and the two storage nodes all get
+[08:08 - 08:15] [SPEAKER_03]: internet access. Whereas for the SFP, since we only have four SFP port present
+[08:15 - 08:21] [SPEAKER_03]: on our FortiNet switch, we only can give them to the two
+[08:21 - 08:26] [SPEAKER_03]: cluster, the two storage cluster and also
+[08:27 - 08:34] [SPEAKER_03]: the two processing cluster nodes. All right so next SFP network card
+[08:34 - 08:40] [SPEAKER_03]: and cables. Cable just arrived today and SFP network card is arriving tomorrow.
+[08:40 - 08:47] [SPEAKER_03]: So the installation for that will begin either on end of this week or
+[08:47 - 08:54] [SPEAKER_03]: early next week. And also moving on our address architecture for our IP.
+[08:54 - 08:59] [SPEAKER_03]: There is a two subnet for both Ethernet and also SFP.
+[08:59 - 09:11] [SPEAKER_03]: The internet will run on 192.168.10 subnet and also the SFP will run on 192.168.100
+[09:11 - 09:15] [SPEAKER_03]: subnet and all is using the dash, I mean the
+[09:15 - 09:21] [SPEAKER_03]: slash 28 subnet mask. And all in all this ensures that there
+[09:21 - 09:25] [SPEAKER_03]: is no mismatch or there is no crossover for the IP.
+[09:25 - 09:32] [SPEAKER_03]: Everything is designed to be clustered up
+[09:33 - 09:37] [SPEAKER_03]: so that we can get the maximum performance.
+[09:37 - 09:45] [SPEAKER_03]: So the full cluster deployment will be ready at the latest will be next
+[09:45 - 09:47] [SPEAKER_03]: week. The earliest will be end of this week.
+[09:48 - 09:52] [SPEAKER_03]: And that's about it from me. So I'll pass it back to Lai An to talk
+[09:52 - 09:56] [SPEAKER_03]: about the cluster software setup progress.
+[09:58 - 10:02] [SPEAKER_01]: Okay thank you Derek for being so thorough with the cluster hardware and
+[10:02 - 10:05] [SPEAKER_01]: network setup update. Just to align everyone,
+[10:07 - 10:11] [SPEAKER_01]: the important part is that the SFP network cards will be coming next week
+[10:11 - 10:14] [SPEAKER_01]: and after it arrives we can finalize the
+[10:14 - 10:20] [SPEAKER_01]: development of the cluster hardware and setup. So next we'll talk about the
+[10:20 - 10:24] [SPEAKER_01]: software setup progress which is championed by
+[10:24 - 10:28] [SPEAKER_01]: Chua. I'll pass it on to Chua to talk about
+[10:28 - 10:34] [SPEAKER_00]: the software setup. All right thank you Lai An. So the current
+[10:34 - 10:39] [SPEAKER_00]: hardware is already installed with the Ubuntu server and the static IP is
+[10:39 - 10:43] [SPEAKER_00]: also set up by Derek already and all that's left is to set up SSH
+[10:43 - 10:47] [SPEAKER_00]: into the machines in order to run the Ansible scripts.
+[10:47 - 10:53] [SPEAKER_00]: So for Slurm, Munch and Connie's setup I have already written the Ansible
+[10:53 - 10:59] [SPEAKER_00]: script and it's already tested on my personal mini cluster and all that's
+[10:59 - 11:04] [SPEAKER_00]: left is to test it on the our main cluster. And also
+[11:04 - 11:12] [SPEAKER_00]: the script also sets up the OpenMPI and that's all. It sets up OpenMPI
+[11:12 - 11:15] [SPEAKER_00]: and different versions. After this I will research on how to
+[11:15 - 11:20] [SPEAKER_00]: set up Lmod and also Prometheus and Grafana and I will also
+[11:21 - 11:24] [SPEAKER_00]: prepare the Ansible script for it. For BeeGFS I believe
+[11:24 - 11:29] [SPEAKER_00]: Lai An is in charge of it as well as the development of the Ansible scripts
+[11:29 - 11:31] [SPEAKER_00]: and yeah that's all for me.
+[11:33 - 11:38] [SPEAKER_01]: Yeah thank you Chua. As he said I'm in charge of the BeeGFS
+[11:39 - 11:42] [SPEAKER_01]: writing of the scripts and also the deployment. So currently the script is
+[11:42 - 11:48] [SPEAKER_01]: being written and it is in progress and we will target to have it by next week.
+[11:50 - 11:59] [SPEAKER_01]: So furthermore we are also working on CUDA as well as PyTorch and finally
+[12:00 - 12:05] [SPEAKER_01]: Apache Spark and that will be the future software that we have to set up after
+[12:05 - 12:10] [SPEAKER_01]: Lmod and Prometheus and Grafana has been set up and deployed.
+[12:13 - 12:20] [SPEAKER_01]: So cluster software setup is doing good for now and we will be progressing steadily.
+[12:21 - 12:27] [SPEAKER_01]: So next let's talk about the development of our HPC system which involves the back-end
+[12:27 - 12:31] [SPEAKER_01]: and the front-end dashboard and also the front-end landing page.
+[12:32 - 12:34] [SPEAKER_01]: I will pass this on to Jayden.
+[12:35 - 12:40] [SPEAKER_02]: Okay so right now since we are still in development for the whole hardware part
+[12:40 - 12:45] [SPEAKER_02]: and also some software part, back-end is still pending status. Repository has been confirmed.
+[12:46 - 12:52] [SPEAKER_02]: So I'll mainly talk about the front-end for now. Okay so I will share screen.
+[12:55 - 12:56] [SPEAKER_01]: Okay go ahead.
+[13:00 - 13:02] [SPEAKER_02]: Can y'all see my screen right?
+[13:04 - 13:04] [SPEAKER_03]: Yeah.
+[13:05 - 13:11] [SPEAKER_02]: All right okay so I think I'll start with the original plan that we have.
+[13:11 - 13:18] [SPEAKER_02]: This was a sample I've done before about how a file management system kind of looks like.
+[13:19 - 13:24] [SPEAKER_02]: So why we need this was because students will upload their file and we'll let them
+[13:25 - 13:28] [SPEAKER_02]: process the file and then the output will be something like this.
+[13:28 - 13:30] [SPEAKER_02]: So they upload a file and then we start.
+[13:30 - 13:36] [SPEAKER_02]: So after that Lai An and I worked on this. Lai An mainly worked on this dashboard first.
+[13:36 - 13:40] [SPEAKER_02]: So how it looked like. He drew everything himself.
+[13:42 - 13:47] [SPEAKER_02]: And as I was developing the upload page I realized that we could have done it differently.
+[13:48 - 13:50] [SPEAKER_02]: So we started on a new design.
+[13:51 - 13:56] [SPEAKER_02]: Okay so we did this one.
+[13:56 - 14:00] [SPEAKER_02]: So this is like a sample working example on how the website will look.
+[14:03 - 14:06] [SPEAKER_02]: Okay like you can see the active jobs and the home page.
+[14:07 - 14:13] [SPEAKER_02]: The utilization and this is the upload page which is based on the idea previously.
+[14:14 - 14:18] [SPEAKER_02]: And then they can do their own changing or customization.
+[14:19 - 14:21] [SPEAKER_02]: Then their history and then their resources.
+[14:23 - 14:25] [SPEAKER_02]: And all these are extra features.
+[14:26 - 14:33] [SPEAKER_02]: And since we don't we do the main function first there could be other features updated.
+[14:34 - 14:38] [SPEAKER_02]: So this will be changed as we continue venturing on how we want to
+[14:38 - 14:41] [SPEAKER_02]: add extra features that will be more convenient.
+[14:42 - 14:46] [SPEAKER_02]: So this is the landing page also that Lai An developed.
+[14:48 - 14:51] [SPEAKER_02]: Yeah so this is a rough idea on how it should look like.
+[14:51 - 14:58] [SPEAKER_02]: And how we can connect each other like the landing page and this temporarily working page.
+[14:59 - 15:03] [SPEAKER_02]: Yeah I'll pass it back to Lai An.
+[15:05 - 15:10] [SPEAKER_01]: Okay thank you Jayden. Let me reshare my screen.
+[15:19 - 15:22] [SPEAKER_01]: Okay so to summarize what Jayden said just now.
+[15:23 - 15:28] [SPEAKER_01]: The backend cannot be started until the cluster is deployed.
+[15:29 - 15:35] [SPEAKER_01]: And so we are currently focusing on the front end for the landing page and also the dashboard.
+[15:36 - 15:40] [SPEAKER_01]: And we already have a working prototype for the dashboard in terms of frontend.
+[15:40 - 15:44] [SPEAKER_01]: And also a rough design for the landing page.
+[15:46 - 15:52] [SPEAKER_01]: Okay so let's move on to the task allocation and also the sprint planning.
+[15:52 - 15:57] [SPEAKER_01]: So we need to allocate tasks for hardware deployment,
+[15:57 - 16:02] [SPEAKER_01]: for software deployment and also for the backend and frontend development.
+[16:03 - 16:09] [SPEAKER_01]: So first things first is for the hardware deployment side.
+[16:11 - 16:19] [SPEAKER_01]: So since the SFP plus network cards are going to arrive around in a few days.
+[16:20 - 16:29] [SPEAKER_01]: Can we task Derek on this since he has been already doing the hardware for the most part.
+[16:30 - 16:37] [SPEAKER_01]: And we will task him with setting up the SFP plus network cards and
+[16:37 - 16:40] [SPEAKER_01]: connecting all the machines together.
+[16:41 - 16:42] [SPEAKER_01]: What are you guys' opinions?
+[16:44 - 16:46] [SPEAKER_02]: Yeah I think he has the most experience so far.
+[16:47 - 16:48] [SPEAKER_00]: Sounds good to me.
+[16:48 - 16:58] [SPEAKER_01]: Yeah so how long do you think you need to finish this Derek?
+[16:58 - 17:02] [SPEAKER_03]: All right so
+[17:04 - 17:10] [SPEAKER_03]: okay for our SFP plus mainly there's two main goals that we have to achieve.
+[17:11 - 17:17] [SPEAKER_03]: One will be installation we have to plug it in and also ensure that the firmware
+[17:18 - 17:21] [SPEAKER_03]: is updated to the latest version.
+[17:22 - 17:26] [SPEAKER_03]: So the firmware flashing that would take maybe one to two days at most.
+[17:27 - 17:30] [SPEAKER_03]: If there's no any unexpected errors.
+[17:30 - 17:34] [SPEAKER_03]: And then another one will be the switch configuration.
+[17:35 - 17:41] [SPEAKER_03]: So the switch configuration we have to set up a separate VLAN and also assign IP
+[17:42 - 17:45] [SPEAKER_03]: each of the SFP connection.
+[17:46 - 17:48] [SPEAKER_03]: So that one will take maybe another day.
+[17:49 - 17:54] [SPEAKER_03]: So all in all I was expecting around three working days.
+[17:56 - 18:04] [SPEAKER_01]: Okay so can we aim to finish this by maybe because today's Wednesday right?
+[18:05 - 18:09] [SPEAKER_01]: So can we finish this by Tuesday next week?
+[18:10 - 18:12] [SPEAKER_01]: Assuming that the cards come.
+[18:13 - 18:18] [SPEAKER_03]: Okay assuming the cards come tomorrow I would think that
+[18:21 - 18:22] [SPEAKER_03]: Wednesday.
+[18:23 - 18:26] [SPEAKER_03]: Yeah next week Wednesday.
+[18:26 - 18:28] [SPEAKER_01]: Okay that'll be good.
+[18:29 - 18:31] [SPEAKER_01]: So let's move on to the software setup.
+[18:32 - 18:41] [SPEAKER_01]: So for me I will try to finish BeeGFS by also next week Wednesday.
+[18:42 - 18:48] [SPEAKER_01]: This is to ensure that we can progress to other software smoothly and we don't
+[18:49 - 18:53] [SPEAKER_01]: block any software from being researched and developed.
+[18:56 - 19:06] [SPEAKER_01]: And also for Chua, do you think you can move on to either Lmod or probably TS and Grafana?
+[19:08 - 19:10] [SPEAKER_00]: Yeah I should be able to move on.
+[19:11 - 19:17] [SPEAKER_00]: I foresee that I should be able to finish Lmod by maybe end of this week.
+[19:18 - 19:20] [SPEAKER_00]: And for TS and Grafana I'll try to finish by next week.
+[19:20 - 19:21] [SPEAKER_00]: Tuesday.
+[19:21 - 19:22] [SPEAKER_00]: Would that be okay?
+[19:23 - 19:28] [SPEAKER_01]: Uh yeah I think both is fine.
+[19:29 - 19:39] [SPEAKER_01]: Lmod you can I guess we can set it to be for this Sunday so you have more time to finish it up.
+[19:39 - 19:45] [SPEAKER_01]: And for Prometheus we can set it to maybe next week Thursday.
+[19:46 - 19:46] [SPEAKER_01]: Would that be good?
+[19:47 - 19:49] [SPEAKER_00]: Yeah sure that works also.
+[19:50 - 19:52] [SPEAKER_01]: All right that's good.
+[19:52 - 19:56] [SPEAKER_01]: Next up is the front-end UI.
+[19:56 - 20:07] [SPEAKER_01]: So since the dashboard UI is somewhat done but we still have the landing pages UI to do.
+[20:08 - 20:14] [SPEAKER_01]: So there's two currently two tasks which is developing the front-end UI for the landing page
+[20:14 - 20:21] [SPEAKER_01]: and also developing the UI for the dashboard because we are doing it in
+[20:21 - 20:28] [SPEAKER_01]: Angular so we have to convert the dashboard's functional prototype into Angular instead.
+[20:29 - 20:35] [SPEAKER_01]: So Jayden I think we should focus on the dashboard's development first.
+[20:36 - 20:44] [SPEAKER_01]: But this is quite a big task so I think we need to split this up into smaller sprints.
+[20:44 - 20:46] [SPEAKER_01]: As you say.
+[20:48 - 21:02] [SPEAKER_01]: So I think one good task delegation is to have to complete one page like one web pages
+[21:05 - 21:06] [SPEAKER_01]: front-end code per week.
+[21:07 - 21:12] [SPEAKER_01]: So like as you showed us now there was like five pages inside the dashboard
+[21:12 - 21:15] [SPEAKER_01]: which is like the home page the history and all those.
+[21:16 - 21:20] [SPEAKER_01]: So a good target will be one page per week.
+[21:21 - 21:22] [SPEAKER_01]: What do you think?
+[21:22 - 21:23] [SPEAKER_02]: I think that works fine.
+[21:23 - 21:29] [SPEAKER_02]: I mean right now since we have a rough idea of what we can produce already should be doable.
+[21:31 - 21:32] [SPEAKER_02]: We can proceed with that.
+[21:33 - 21:41] [SPEAKER_01]: Okay so we will set a milestone of one to two pages depending on your availability per week.
+[21:41 - 21:50] [SPEAKER_01]: It will target the dashboard's front-end to be done in about three or four weeks.
+[21:51 - 21:52] [SPEAKER_01]: All right?
+[21:52 - 21:53] [Unknown]: Yeah.
+[21:53 - 21:55] [SPEAKER_01]: Okay so that's good.
+[21:56 - 22:03] [SPEAKER_01]: Let's move on to risk and any potential issues that have arised during our development.
+[22:03 - 22:05] [SPEAKER_01]: So I'll open the floor to everyone.
+[22:06 - 22:09] [SPEAKER_01]: Anyone wants to talk about any issues they face they can go ahead.
+[22:13 - 22:20] [SPEAKER_02]: I think Derek you can talk to about the shipment and also the possible hardware
+[22:20 - 22:24] [SPEAKER_02]: issues that we have or we already had and could occur again.
+[22:25 - 22:25] [Unknown]: 
+[22:25 - 22:26] [SPEAKER_03]: All right.
+[22:26 - 22:27] [SPEAKER_03]: Thank you, Jayden.
+[22:28 - 22:33] [SPEAKER_03]: So potential risk will be the delay for delivery.
+[22:33 - 22:39] [SPEAKER_03]: So if let's say Touchwood our network card doesn't come in time by this week
+[22:40 - 22:50] [SPEAKER_03]: we might have to postpone the final handover for my hardware site to next week Friday.
+[22:51 - 22:57] [SPEAKER_03]: Yeah assuming that you know the delivery people don't work on Saturday and Sundays.
+[22:57 - 23:05] [SPEAKER_03]: And also integration issues since our network card is not the latest version
+[23:05 - 23:13] [SPEAKER_03]: there might be some compatibility issues that we have to factor in because we haven't tested it.
+[23:14 - 23:22] [SPEAKER_03]: So you have to give me some time to test and ensure that all connection is running at the
+[23:22 - 23:26] [SPEAKER_03]: full 10 gigabits speed that we are expecting.
+[23:26 - 23:30] [SPEAKER_03]: So that's about it from my side, hardware side.
+[23:30 - 23:38] [SPEAKER_03]: So I'll pass back to maybe Lai An or Chua to talk about software or maybe Jayden for front end.
+[23:40 - 23:45] [SPEAKER_02]: I think we should probably talk about our current discussion with our supervisors.
+[23:46 - 23:52] [SPEAKER_02]: So far there's any missed calls or increased features that we were not expecting
+[23:53 - 23:55] [SPEAKER_02]: since I just talked to him just now.
+[23:55 - 24:06] [SPEAKER_01]: Yeah so after we had our meetings with the supervisor twice now actually
+[24:07 - 24:15] [SPEAKER_01]: we have identified two more main features that we have to complete that he hopes to
+[24:15 - 24:19] [SPEAKER_01]: for us to complete in the duration of FYP.
+[24:19 - 24:27] [SPEAKER_01]: So the first one was basically already known but he just clarified it which is to set up
+[24:27 - 24:32] [SPEAKER_01]: Apache Spark in addition to our current software in the cluster.
+[24:34 - 24:46] [SPEAKER_01]: And this one basically is more workload for Chua's NB side as the software setup for the HPC.
+[24:46 - 24:57] [SPEAKER_01]: And also the second one is to set up an agentic AI cluster manager type thing with open claw.
+[24:58 - 25:04] [SPEAKER_01]: So he wants to use an AI to manage the cluster autonomously without human,
+[25:05 - 25:08] [SPEAKER_01]: with minimal human intervention basically.
+[25:08 - 25:13] [SPEAKER_01]: So this probably introduces more of the technical workload and also
+[25:13 - 25:17] [SPEAKER_01]: the time needed to complete the final year project.
+[25:17 - 25:27] [SPEAKER_01]: So we will have to work a little bit faster so that we can complete everything that we were assigned.
+[25:30 - 25:34] [SPEAKER_01]: So that's about it for the risk on my side.
+[25:35 - 25:37] [SPEAKER_01]: Are there any more opinions?
+[25:40 - 25:42] [SPEAKER_00]: None from my side.
+[25:43 - 25:46] [SPEAKER_00]: There could be none for the software side also.
+[25:47 - 25:49] [SPEAKER_01]: All right looks like that's all good.
+[25:51 - 25:57] [SPEAKER_01]: So for the action items today which is basically all the tasks that is assigned to everyone today.
+[25:58 - 26:04] [SPEAKER_01]: So firstly Derek we have assigned you for the hardware setup for SFP plus
+[26:04 - 26:06] [SPEAKER_01]: for the network cards and also the cables.
+[26:06 - 26:13] [SPEAKER_01]: We expect it to be done by next Wednesday assuming that the deliveries are on time.
+[26:13 - 26:17] [SPEAKER_01]: If not that will be postponed to a further date I guess.
+[26:18 - 26:25] [SPEAKER_01]: And then for the software deployment and research for the cluster,
+[26:26 - 26:34] [SPEAKER_01]: we are targeting for Chua to complete the Lmod research and also HansiMoscript development by
+[26:35 - 26:41] [SPEAKER_01]: this week's Sunday and then Prometheus and Grafana by next week's Thursday.
+[26:42 - 26:47] [SPEAKER_01]: And for me I will complete the research and development of the script for BeeGFS
+[26:47 - 26:50] [SPEAKER_01]: by next week's Wednesday.
+[26:52 - 26:59] [SPEAKER_01]: So after that we will have the front-end dashboard development in Angular.
+[26:59 - 27:03] [SPEAKER_01]: So Jayden will be doing this in a sprint-like fashion
+[27:04 - 27:09] [SPEAKER_01]: where he will be completing around one to two pages based on his workload per week
+[27:09 - 27:15] [SPEAKER_01]: and we are targeting for the front end of the dashboard to be completed by in three or four
+[27:15 - 27:20] [SPEAKER_01]: weeks. So that's all for the tasks that was assigned for this meeting.
+[27:22 - 27:26] [SPEAKER_01]: Let's move on to the other businesses that we have.
+[27:27 - 27:35] [SPEAKER_01]: So for the supervisor feedback, all the feedback has been positive and he is still encouraging us
+[27:35 - 27:46] [SPEAKER_01]: to work on it fully and try our best. And for the supervisor meetings, we have also scheduled it
+[27:46 - 27:56] [SPEAKER_01]: to be also Monday 5.15 to 6.15 pm as per the arrangement in semester one which is the same
+[27:56 - 28:05] [SPEAKER_01]: arrangement. So our next supervisor meeting will be next week's Monday.
+[28:07 - 28:11] [SPEAKER_01]: So for additional concerns or updates,
+[28:13 - 28:17] [SPEAKER_01]: there will not be much concern because we have discussed everything already.
+[28:18 - 28:21] [SPEAKER_01]: Anyone have any concerns or updates to give?
+[28:25 - 28:29] [SPEAKER_01]: Okay, looks like there are no concerns or updates.
+[28:30 - 28:35] [SPEAKER_01]: So lastly we will talk about when we will have our next meeting.
+[28:37 - 28:44] [SPEAKER_01]: So ideally we will have the next meeting in about a week to align our progress and also
+[28:44 - 28:52] [SPEAKER_01]: to assign new tasks and to help with our problems.
+[28:55 - 29:00] [SPEAKER_01]: So ideally the date will also be after the supervisor meeting on Monday.
+[29:00 - 29:08] [SPEAKER_01]: So do you guys have any dates that you are free to do the meeting?
+[29:09 - 29:13] [SPEAKER_01]: Preferably around Tuesday or Tuesday to Friday?
+[29:16 - 29:24] [SPEAKER_02]: I'm hoping Friday since when I stay at the stay, I will be available during the afternoon time only.
+[29:25 - 29:30] [SPEAKER_02]: After that I will not be available at night. As for Friday, I'll be free the whole day.
+[29:34 - 29:40] [SPEAKER_01]: Okay, we have one vote for Friday. What about Shi Xiang and Derek?
+[29:44 - 29:47] [SPEAKER_03]: Yeah, so I'm okay with Friday also.
+[29:49 - 29:51] [SPEAKER_01]: Okay, what about Shi Xiang?
+[29:53 - 30:00] [SPEAKER_00]: For Friday, I would be busy with my CA duties. So I will be only available on evening and night.
+[30:02 - 30:05] [SPEAKER_00]: On Thursday, I will be free for the entire day.
+[30:09 - 30:15] [SPEAKER_01]: Okay, so are you guys okay with the Friday evening since Chua is free
+[30:16 - 30:22] [SPEAKER_01]: and also everyone else is free? Yeah, so we tenderly set it during
+[30:23 - 30:28] [SPEAKER_01]: Friday evening next week for the second update progress update meeting.
+[30:31 - 30:38] [SPEAKER_01]: Okay, I think that's about it for this meeting. We have achieved everything in our
+[30:39 - 30:43] [SPEAKER_01]: meeting agenda. So I will end this meeting now. Thank you everyone for attending.
+[30:45 - 30:47] [SPEAKER_02]: Thank you everyone. Thank you.
+[30:47 - 30:48] [SPEAKER_01]: Bye. Thank you.
+[30:48 - 30:48] [SPEAKER_01]: Bye.
+[30:50 - 30:57] [SPEAKER_01]: Okay, I stopped recording already.
