@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from openai import OpenAI
+from concurrent.futures import ThreadPoolExecutor
 
 from backend.models.config import AppConfig
 from backend.models.domain import GeneratedMinutes
@@ -16,6 +17,10 @@ from backend.services.generation.prompts import (
     MEETING_FACTS_USER,
     MINUTES_RENDER_SYSTEM,
     MINUTES_RENDER_USER,
+    CHUNK_FACTS_SYSTEM,
+    CHUNK_FACTS_USER,
+    MERGE_FACTS_SYSTEM,
+    MERGE_FACTS_USER
 )
 
 
@@ -61,10 +66,41 @@ class GenerationService:
         safe_name = self._output._sanitize_filename(output_name)
         return self._config.output_dir / safe_name
 
+    def _chunk_transcript(self, transcript: str, max_words: int = 2000) -> list[str]:
+        words = transcript.split()
+        chunks = []
+        for i in range(0, len(words), max_words):
+            chunks.append(" ".join(words[i:i + max_words]))
+        return chunks
+
     def _generate_minutes(self, *, transcript: str, template: str) -> str:
         client = self._client()
-        facts = self._extract_meeting_facts(client, transcript)
-        return self._render_minutes(client, template=template, facts=facts)
+
+        chunks = self._chunk_transcript(transcript, max_words=2000)
+
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(
+                    self._complete, 
+                    client, 
+                    system_prompt=CHUNK_FACTS_SYSTEM, 
+                    user_prompt=CHUNK_FACTS_USER.format(transcript=chunk)
+                )
+                for chunk in chunks
+            ]
+            raw_chunks_outputs = [future.result() for future in futures]
+        
+        # Step 3: Merge the raw chunks into your unified structure (Reduce)
+        combined_raw_notes = "\n\n--- Chunk ---\n\n".join(raw_chunks_outputs)
+        
+        structured_facts = self._complete(
+            client,
+            system_prompt=MERGE_FACTS_SYSTEM,
+            user_prompt=MERGE_FACTS_USER.format(raw_notes=combined_raw_notes)
+        )
+        
+        # Step 4: Render your final minutes using the template
+        return self._render_minutes(client, template=template, facts=structured_facts)
 
     def _extract_meeting_facts(self, client: OpenAI, transcript: str) -> str:
         content = self._complete(

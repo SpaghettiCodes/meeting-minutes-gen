@@ -15,6 +15,7 @@ adapt to whatever structure is present.
 - Output markdown only in the exact section structure below.
 """
 
+
 MEETING_FACTS_USER = """\
 Extract structured meeting notes from this transcript.
 
@@ -90,4 +91,26 @@ Fill the template using the structured notes.
 </notes>
 
 Produce the completed meeting minutes now. Start directly with the minutes content.
+"""
+
+CHUNK_FACTS_SYSTEM = "You are an expert analyst. Extract all key facts, decisions, metadata, and action items from this transcript chunk as raw, detailed bullet points."
+CHUNK_FACTS_USER = "Extract facts from this chunk:\n\n<transcript>\n{transcript}\n</transcript>"
+
+MERGE_FACTS_SYSTEM = """You are an expert meeting analyst. Take these raw bullet points collected from multiple chunks of the same meeting and consolidate them into a single, clean, structured markdown document. 
+Rules:
+- Merge duplicate points.
+- Group topics logically.
+- If a field is missing, write 'Not stated'."""
+
+# Use your original structure here
+MERGE_FACTS_USER = """\
+Consolidate these raw notes into the final structure.
+
+<raw_notes>
+{raw_notes}
+</raw_notes>
+
+Use this exact structure:
+## Meeting Metadata
+...
 """
