@@ -3,7 +3,6 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-import ffmpeg
 from openai import OpenAI
 
 from backend.models.config import AppConfig
@@ -13,6 +12,23 @@ from backend.services.exceptions import ExternalAPIError, ValidationError
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".webm", ".avi", ".mpeg", ".mpg"}
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".opus"}
 MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
+
+_MEDIA_MIME_TYPES = {
+    ".mp4": "video/mp4",
+    ".mkv": "video/x-matroska",
+    ".mov": "video/quicktime",
+    ".webm": "video/webm",
+    ".avi": "video/x-msvideo",
+    ".mpeg": "video/mpeg",
+    ".mpg": "video/mpeg",
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".m4a": "audio/mp4",
+    ".flac": "audio/flac",
+    ".ogg": "audio/ogg",
+    ".aac": "audio/aac",
+    ".opus": "audio/opus",
+}
 
 
 class TranscriptionService:
@@ -38,12 +54,12 @@ class TranscriptionService:
         if not raw:
             raise ValidationError("Uploaded file is empty.")
 
-        suffix = Path(filename).suffix.lower()
+        safe_name = Path(filename).name
         with tempfile.TemporaryDirectory() as tmp_dir:
-            media_path = Path(tmp_dir) / f"upload{suffix}"
+            media_path = Path(tmp_dir) / safe_name
             media_path.write_bytes(raw)
             try:
-                content = self._transcribe_media_file(media_path)
+                content = self._call_whisper(media_path)
             except RuntimeError as exc:
                 raise ExternalAPIError(str(exc)) from exc
             except Exception as exc:
@@ -54,47 +70,22 @@ class TranscriptionService:
         output_name = f"{Path(filename).stem}.txt"
         return TextDocument(name=output_name, content=content)
 
-    def _transcribe_media_file(self, media_path: Path) -> str:
-        if media_path.suffix.lower() in VIDEO_EXTENSIONS:
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                audio_path = Path(tmp_dir) / "audio.wav"
-                self._extract_audio(media_path, audio_path)
-                return self._call_whisper(audio_path)
+    def _call_whisper(self, media_path: Path) -> str:
+        if not media_path.is_file() or media_path.stat().st_size == 0:
+            raise RuntimeError("Media file is empty.")
 
-        return self._call_whisper(media_path)
-
-    def _extract_audio(self, video_path: Path, audio_path: Path) -> None:
-        try:
-            (
-                ffmpeg.input(str(video_path))
-                .output(
-                    str(audio_path),
-                    format="wav",
-                    acodec="pcm_s16le",
-                    ar=16000,
-                    ac=1,
-                )
-                .overwrite_output()
-                .run(capture_stderr=True)
-            )
-        except ffmpeg.Error as exc:
-            detail = (exc.stderr or b"").decode(errors="replace").strip()
-            detail = detail or "Unknown ffmpeg error"
-            raise RuntimeError(f"Failed to extract audio from video: {detail}") from exc
-
-    def _call_whisper(self, audio_path: Path) -> str:
-        if not audio_path.is_file() or audio_path.stat().st_size == 0:
-            raise RuntimeError("Audio file is empty.")
+        suffix = media_path.suffix.lower()
+        mime_type = _MEDIA_MIME_TYPES.get(suffix, "application/octet-stream")
 
         client = OpenAI(
             api_key=self._config.whisper_api_key or "not-needed",
             base_url=self._config.whisper_base_url.rstrip("/"),
             timeout=self._config.request_timeout,
         )
-        with audio_path.open("rb") as audio_file:
+        with media_path.open("rb") as media_file:
             response = client.audio.transcriptions.create(
                 model=self._config.transcription_model,
-                file=audio_file,
+                file=(media_path.name, media_file, mime_type),
             )
 
         text = (response.text or "").strip()

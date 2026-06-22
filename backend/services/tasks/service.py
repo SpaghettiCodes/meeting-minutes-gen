@@ -91,7 +91,7 @@ class TaskService:
         if self._worker_task is not None:
             return
         self._loop = asyncio.get_running_loop()
-        self._shutdown.clear()
+        self._shutdown.clear()  
         self._worker_task = asyncio.create_task(self._worker_loop())
 
     async def stop_worker(self) -> None:
