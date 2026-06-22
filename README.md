@@ -5,8 +5,9 @@ Upload transcripts (or transcribe audio/video), pick a template, and generate me
 ## Setup
 
 1. Copy `.env.example` to `.env`
-2. Run local llama.cpp (port 8002) for generation + template conversion
-3. Run vLLM Whisper (port 8000): `pip install vllm[audio]`, set `VLLM_MAX_AUDIO_CLIP_FILESIZE_MB=1024`. No `--limit-mm-per-prompt` — Whisper is audio-only, not vision.
+2. Run llama.cpp (port 8002) for generation + template conversion
+3. Run WhisperX microservice (port 8000) for transcription + diarization
+4. Set `HF_TOKEN` in `.env` (required for pyannote speaker diarization)
 
 ## Run
 
@@ -24,7 +25,9 @@ Demo files live in `data/transcripts/` and `data/templates/`. Generated minutes 
 |----------|----------|
 | `LLM_BASE_URL` | Minutes generation, template conversion |
 | `LLM_MODEL` | Copy `id` from `GET /v1/models` on your llama.cpp server |
-| `WHISPER_BASE_URL` | Audio/video transcription |
-| `WHISPER_MODEL` | Whisper model name on vLLM |
+| `WHISPERX_BASE_URL` | WhisperX `/diarize` endpoint (video/audio upload) |
+| `HF_TOKEN` | Hugging Face token for WhisperX diarization |
+| `TRANSCRIPTION_LANGUAGE` | Language code passed to WhisperX (default `en`) |
+| `WHISPERX_REQUEST_TIMEOUT` | Max seconds to wait for transcription (default 3600) |
 
-When backend runs in Docker, use `host.docker.internal` instead of `localhost` for both URLs.
+When backend runs in Docker, use `host.docker.internal` instead of `localhost` for service URLs.

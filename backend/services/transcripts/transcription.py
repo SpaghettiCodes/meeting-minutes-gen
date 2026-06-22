@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
-import ffmpeg
-from openai import OpenAI
+import httpx
 
 from backend.models.config import AppConfig
 from backend.models.domain import TextDocument
@@ -14,7 +12,22 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".webm", ".avi", ".mpeg", ".mpg"}
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".opus"}
 MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
 
-_WHISPER_UPLOAD_NAME = "audio.wav"
+_MEDIA_MIME_TYPES = {
+    ".mp4": "video/mp4",
+    ".mkv": "video/x-matroska",
+    ".mov": "video/quicktime",
+    ".webm": "video/webm",
+    ".avi": "video/x-msvideo",
+    ".mpeg": "video/mpeg",
+    ".mpg": "video/mpeg",
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".m4a": "audio/mp4",
+    ".flac": "audio/flac",
+    ".ogg": "audio/ogg",
+    ".aac": "audio/aac",
+    ".opus": "audio/opus",
+}
 
 
 class TranscriptionService:
@@ -40,84 +53,105 @@ class TranscriptionService:
         if not raw:
             raise ValidationError("Uploaded file is empty.")
 
-        safe_name = Path(filename).name
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            media_path = tmp_path / safe_name
-            media_path.write_bytes(raw)
-            try:
-                whisper_path = self._prepare_whisper_wav(media_path, tmp_path)
-                content = self._call_whisper(whisper_path)
-            except RuntimeError as exc:
-                raise ExternalAPIError(str(exc)) from exc
-            except Exception as exc:
-                raise ExternalAPIError(
-                    f"Error calling Whisper transcription API: {exc}"
-                ) from exc
+        try:
+            result = self._call_whisperx(filename, raw)
+            content = self._format_transcript(filename, result)
+        except httpx.HTTPError as exc:
+            raise ExternalAPIError(f"Error calling WhisperX service: {exc}") from exc
+        except RuntimeError as exc:
+            raise ExternalAPIError(str(exc)) from exc
+        except Exception as exc:
+            raise ExternalAPIError(f"Error during transcription: {exc}") from exc
 
         output_name = f"{Path(filename).stem}.txt"
         return TextDocument(name=output_name, content=content)
 
-    def _prepare_whisper_wav(self, media_path: Path, tmp_dir: Path) -> Path:
-        output_path = tmp_dir / _WHISPER_UPLOAD_NAME
-
-        # Probe input first
-        probe = ffmpeg.probe(str(media_path))
-        audio_streams = [s for s in probe["streams"] if s["codec_type"] == "audio"]
-        if not audio_streams:
-            raise RuntimeError(f"No audio stream found in '{media_path.name}'.")
-
-        self._transcode_to_wav(media_path, output_path)
-
-        # Verify output duration
-        out_probe = ffmpeg.probe(str(output_path))
-        duration = float(out_probe["format"].get("duration", 0))
-        if duration < 0.1:
-            raise RuntimeError(f"Transcoded WAV is too short ({duration:.2f}s).")
-
-        return output_path
-
-    @staticmethod
-    def _transcode_to_wav(input_path: Path, output_path: Path) -> None:
-        try:
-            (
-                ffmpeg.input(str(input_path))
-                .output(
-                    str(output_path),
-                    format="wav",
-                    acodec="pcm_s16le",
-                    ar=16000,
-                    ac=1,
-                    vn=None,
-                )
-                .overwrite_output()
-                .run(capture_stderr=True)
+    def _call_whisperx(self, filename: str, raw: bytes) -> dict:
+        if not self._config.hf_token:
+            raise RuntimeError(
+                "HF_TOKEN is not set. Add it to .env for WhisperX speaker diarization."
             )
-        except ffmpeg.Error as exc:
-            detail = (exc.stderr or b"").decode(errors="replace").strip()
-            detail = detail or "Unknown ffmpeg error"
-            raise RuntimeError(f"Failed to prepare audio for Whisper: {detail}") from exc
 
-        if not output_path.is_file() or output_path.stat().st_size == 0:
-            raise RuntimeError("ffmpeg produced an empty audio file.")
+        safe_name = Path(filename).name
+        suffix = Path(safe_name).suffix.lower()
+        mime_type = _MEDIA_MIME_TYPES.get(suffix, "application/octet-stream")
+        url = f"{self._config.whisperx_base_url.rstrip('/')}/diarize"
 
-
-    def _call_whisper(self, wav_path: Path) -> str:
-        if not wav_path.is_file() or wav_path.stat().st_size == 0:
-            raise RuntimeError("Media file is empty.")
-
-        client = OpenAI(
-            api_key=self._config.whisper_api_key or "not-needed",
-            base_url=self._config.whisper_base_url,
+        response = httpx.post(
+            url,
+            files={"file": (safe_name, raw, mime_type)},
+            data={
+                "hf_token": self._config.hf_token,
+                "language": self._config.transcription_language,
+            },
+            timeout=self._config.whisperx_request_timeout,
         )
 
-        with wav_path.open("rb") as audio_file:
-            transcript = client.audio.transcriptions.create(
-                model=self._config.transcription_model,
-                file=(wav_path.name, audio_file, "audio/wav"),
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"WhisperX returned {response.status_code}: {response.text.strip()}"
             )
 
-        text = transcript.text.strip()
-        if not text:
-            raise RuntimeError("Whisper returned an empty transcript.")
-        return text
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise RuntimeError("WhisperX returned an unexpected response.")
+        return payload
+
+    def _format_transcript(self, filename: str, result: dict) -> str:
+        segments = result.get("segments", [])
+        if not segments:
+            raise RuntimeError("WhisperX returned no segments.")
+
+        speakers = sorted(
+            {
+                str(segment.get("speaker"))
+                for segment in segments
+                if segment.get("speaker")
+            }
+        )
+
+        lines = [
+            "============================================================",
+            "TRANSCRIPTION REPORT WITH SPEAKER DIARIZATION",
+            "============================================================",
+            f"Source File: {Path(filename).name}",
+            f"Detected Language: {result.get('language', self._config.transcription_language)}",
+            f"Number of Speakers: {len(speakers)}",
+        ]
+        if speakers:
+            lines.append(f"Speakers: {', '.join(speakers)}")
+        lines.extend(
+            [
+                "Timing Format: Relative (MM:SS from start)",
+                "============================================================",
+                "",
+                "TRANSCRIPTION BY SPEAKER:",
+                "==============================",
+                "",
+            ]
+        )
+
+        current_speaker = None
+        for segment in segments:
+            speaker = str(segment.get("speaker") or "Unknown")
+            text = str(segment.get("text", "")).strip()
+            if not text:
+                continue
+
+            start = self._fmt_time(float(segment.get("start", 0)))
+            end = self._fmt_time(float(segment.get("end", 0)))
+
+            if speaker != current_speaker:
+                lines.append("")
+                lines.append(f"[{speaker}]")
+                current_speaker = speaker
+
+            lines.append(f"({start} - {end}) {text}")
+
+        return "\n".join(lines).strip() + "\n"
+
+    @staticmethod
+    def _fmt_time(seconds: float) -> str:
+        total = max(0, int(seconds))
+        minutes, secs = divmod(total, 60)
+        return f"{minutes:02d}:{secs:02d}"

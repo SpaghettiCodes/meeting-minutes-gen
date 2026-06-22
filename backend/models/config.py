@@ -13,8 +13,8 @@ ENV_FILE = PROJECT_ROOT / ".env.backend"
 
 DEFAULT_LLM_BASE_URL = "http://localhost:8002/v1"
 DEFAULT_LLM_MODEL = "default"
-DEFAULT_WHISPER_BASE_URL = "http://localhost:8000/v1"
-DEFAULT_WHISPER_MODEL = "openai/whisper-small"
+DEFAULT_WHISPERX_BASE_URL = "http://localhost:8000"
+DEFAULT_TRANSCRIPTION_LANGUAGE = "en"
 
 
 @dataclass(frozen=True)
@@ -22,11 +22,12 @@ class AppConfig:
     llm_base_url: str
     llm_model: str
     llm_api_key: str | None
-    whisper_base_url: str
-    transcription_model: str
-    whisper_api_key: str | None
+    whisperx_base_url: str
+    hf_token: str | None
+    transcription_language: str
     temperature: float
     request_timeout: float
+    whisperx_request_timeout: float
     template_conversion_sources_dir: Path
     transcription_sources_dir: Path
     transcript_dir: Path
@@ -65,13 +66,11 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         or DEFAULT_LLM_MODEL
     )
     llm_api_key = os.getenv("LLM_API_KEY") or os.getenv("VLLM_API_KEY") or None
-    whisper_base_url = (
-        os.getenv("WHISPER_BASE_URL")
-        or os.getenv("VLLM_WHISPER_BASE_URL")
-        or DEFAULT_WHISPER_BASE_URL
+    whisperx_base_url = os.getenv("WHISPERX_BASE_URL") or DEFAULT_WHISPERX_BASE_URL
+    hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN") or None
+    transcription_language = (
+        os.getenv("TRANSCRIPTION_LANGUAGE") or DEFAULT_TRANSCRIPTION_LANGUAGE
     )
-    transcription_model = os.getenv("WHISPER_MODEL") or DEFAULT_WHISPER_MODEL
-    whisper_api_key = os.getenv("WHISPER_API_KEY") or os.getenv("VLLM_API_KEY") or None
 
     def resolve_dir(key: str, default: str) -> Path:
         path = Path(os.getenv(key, default))
@@ -85,16 +84,12 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         llm_base_url=llm_base_url,
         llm_model=llm_model,
         llm_api_key=llm_api_key,
-        whisper_base_url=whisper_base_url,
-        transcription_model=transcription_model,
-        whisper_api_key=whisper_api_key,
+        whisperx_base_url=whisperx_base_url,
+        hf_token=hf_token,
+        transcription_language=transcription_language,
         temperature=float(os.getenv("TEMPERATURE", "0.2")),
-        request_timeout=float(
-            os.getenv("LLM_REQUEST_TIMEOUT")
-            or os.getenv("VLLM_REQUEST_TIMEOUT")
-            or os.getenv("WHISPER_REQUEST_TIMEOUT")
-            or "600"
-        ),
+        request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT") or "600"),
+        whisperx_request_timeout=float(os.getenv("WHISPERX_REQUEST_TIMEOUT") or "3600"),
         template_conversion_sources_dir=resolve_dir(
             "TEMPLATE_CONVERSION_SOURCES_DIR",
             "data/template_sources",

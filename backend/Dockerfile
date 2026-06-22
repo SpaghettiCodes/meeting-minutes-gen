@@ -10,7 +10,6 @@ COPY backend/requirements.txt backend/requirements.txt
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
-        ffmpeg \
         fontconfig \
         libjpeg62-turbo \
         libxext6 \
