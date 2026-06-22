@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import tempfile
 from pathlib import Path
 
@@ -10,22 +9,14 @@ import pypandoc
 from backend.models.config import AppConfig
 from backend.models.domain import TextDocument
 from backend.services.exceptions import ExternalAPIError, ValidationError
-from backend.services.generation.service import GenerationService
 from backend.services.gemini.client import build_chat_client
-from backend.services.templates.cleanup import (
-    ensure_batch_end_marker,
-    sanitize_template_draft,
-    strip_batch_markers,
-    strip_document_header,
-)
+from backend.services.templates.cleanup import ensure_batch_end_marker, strip_batch_markers
 from backend.services.templates.document_chunks import split_document_structured
 from backend.services.templates.preprocess import preprocess_extracted_text
 from backend.services.templates.prompts import (
     TEMPLATE_CONVERSION_CHUNK_USER,
     TEMPLATE_CONVERSION_SYSTEM,
     TEMPLATE_CONVERSION_USER,
-    TEMPLATE_REPAIR_SYSTEM,
-    TEMPLATE_REPAIR_USER,
 )
 
 TEMPLATE_SOURCE_EXTENSIONS = {".docx", ".pdf"}
@@ -76,7 +67,6 @@ class TemplateConversionService:
             page_texts = [preprocess_extracted_text(page) for page in page_texts]
 
         template = self._convert_with_llm(extracted, page_texts=page_texts)
-        template = self._repair_template(template)
         resolved_name = output_name or f"{Path(filename).stem}.md"
         return TextDocument(name=resolved_name, content=template)
 
@@ -217,31 +207,6 @@ class TemplateConversionService:
             raise ExternalAPIError("Model returned an empty response.")
         return self._clean_output(content.strip())
 
-    def _repair_template(self, draft: str) -> str:
-        sanitized = sanitize_template_draft(draft)
-        if not sanitized:
-            return sanitized
-
-        client = build_chat_client(self._config)
-        user_prompt = TEMPLATE_REPAIR_USER.format(draft=sanitized)
-        try:
-            response = client.chat.completions.create(
-                model=self._config.model,
-                messages=[
-                    {"role": "system", "content": TEMPLATE_REPAIR_SYSTEM},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.0,
-                max_tokens=self._config.max_tokens,
-            )
-        except Exception as exc:
-            raise ExternalAPIError(f"Error calling Gemini API during template repair: {exc}") from exc
-
-        content = response.choices[0].message.content
-        if not content:
-            return self._clean_output(sanitized)
-        return self._clean_output(content.strip())
-
     @staticmethod
     def _format_prior_template(prior_batches: list[str]) -> str:
         if not prior_batches:
@@ -273,14 +238,11 @@ class TemplateConversionService:
 
     @staticmethod
     def _aggregate_chunk_templates(templates: list[str]) -> str:
-        parts: list[str] = []
-        for index, part in enumerate(templates):
-            cleaned = strip_batch_markers(part.strip())
-            if not cleaned:
-                continue
-            if index > 0:
-                cleaned = strip_document_header(cleaned)
-            parts.append(cleaned)
+        parts = [
+            strip_batch_markers(part.strip())
+            for part in templates
+            if strip_batch_markers(part.strip())
+        ]
         return "\n\n".join(parts)
 
     @staticmethod
@@ -300,60 +262,4 @@ class TemplateConversionService:
 
     @staticmethod
     def _clean_output(content: str) -> str:
-        cleaned = GenerationService._clean_output(content)
-        cleaned = sanitize_template_draft(cleaned)
-        cleaned = _strip_trailing_commentary(cleaned)
-        cleaned = strip_batch_markers(cleaned)
-        cleaned = re.sub(r"</?document>", "", cleaned, flags=re.IGNORECASE).strip()
-        cleaned = re.sub(r"</?prior_template>", "", cleaned, flags=re.IGNORECASE).strip()
-        drop_prefixes = (
-            "<document>",
-            "</document>",
-            "```markdown",
-            "```md",
-            "```",
-        )
-        drop_suffixes = ("```",)
-        lines = cleaned.splitlines()
-        while lines:
-            stripped = lines[0].strip().lower()
-            if not stripped:
-                lines.pop(0)
-                continue
-            if stripped in drop_prefixes:
-                lines.pop(0)
-                continue
-            break
-        while lines:
-            stripped = lines[-1].strip().lower()
-            if not stripped:
-                lines.pop()
-                continue
-            if stripped in drop_suffixes:
-                lines.pop()
-                continue
-            break
-        return "\n".join(lines).strip()
-
-
-_TRAILING_COMMENTARY_MARKERS = (
-    "### self-check",
-    "## self-check",
-    "### final self-check",
-    "## final self-check",
-    "this template should be ready",
-)
-
-
-def _strip_trailing_commentary(content: str) -> str:
-    lines = content.splitlines()
-    cut = len(lines)
-    for index, line in enumerate(lines):
-        lowered = line.strip().lower()
-        if any(lowered.startswith(marker) for marker in _TRAILING_COMMENTARY_MARKERS):
-            cut = index
-            break
-    trimmed = lines[:cut]
-    while trimmed and trimmed[-1].strip() == "```":
-        trimmed.pop()
-    return "\n".join(trimmed).strip()
+        return content.strip()

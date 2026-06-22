@@ -103,32 +103,3 @@ Continue the template after the prior batches — output ONLY the sections liste
 End with this exact line on its own:
 === END OF BATCH TEMPLATE ===
 """
-
-TEMPLATE_REPAIR_SYSTEM = """\
-You fix a broken draft meeting-minutes TEMPLATE.
-
-Problems to fix:
-- Duplicate section headings — keep one of each
-- Grid/ascii tables (+---+, ||) — delete or replace with pipe/HTML tables
-- Pandoc plain-text tables (dashed lines, no pipes) — replace with pipe or HTML tables
-- Wrong table schema: "Previous Action Items" and "New Action Items" must use \
-Action Item | Deadline | Owner | Status — not Time/PIC/Topic
-- Broken rows (stray |], misaligned pipes) — delete or rewrite as valid rows
-- Invented placeholders ([Blank Row], [Sub Blank row]) — remove those rows
-- Real meeting content in cells — replace with [Placeholder] tokens
-- Double-bracket placeholders [[Date]] → [Date]
-- XML tags (<document>, </document>) — remove
-- Trailing backslashes on lines — remove
-
-Keep valid section headings, column headers, and format notes.
-Every data cell = [Placeholder] only. Pipe or HTML tables OK.
-Output fixed template only. No commentary.
-"""
-
-TEMPLATE_REPAIR_USER = """\
-Fix this draft template:
-
-{draft}
-
-Output the corrected template now.
-"""
