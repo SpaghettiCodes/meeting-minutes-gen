@@ -67,11 +67,6 @@ class TranscriptionService:
         return TextDocument(name=output_name, content=content)
 
     def _call_whisperx(self, filename: str, raw: bytes) -> dict:
-        if not self._config.hf_token:
-            raise RuntimeError(
-                "HF_TOKEN is not set. Add it to .env for WhisperX speaker diarization."
-            )
-
         safe_name = Path(filename).name
         suffix = Path(safe_name).suffix.lower()
         mime_type = _MEDIA_MIME_TYPES.get(suffix, "application/octet-stream")
@@ -81,7 +76,6 @@ class TranscriptionService:
             url,
             files={"file": (safe_name, raw, mime_type)},
             data={
-                "hf_token": self._config.hf_token,
                 "language": self._config.transcription_language,
             },
             timeout=self._config.whisperx_request_timeout,

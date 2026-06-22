@@ -7,7 +7,6 @@ Upload transcripts (or transcribe audio/video), pick a template, and generate me
 1. Copy `.env.example` to `.env`
 2. Run llama.cpp (port 8002) for generation + template conversion
 3. Run WhisperX microservice (port 8000) for transcription + diarization
-4. Set `HF_TOKEN` in `.env` (required for pyannote speaker diarization)
 
 ## Run
 
@@ -26,7 +25,6 @@ Demo files live in `data/transcripts/` and `data/templates/`. Generated minutes 
 | `LLM_BASE_URL` | Minutes generation, template conversion |
 | `LLM_MODEL` | Copy `id` from `GET /v1/models` on your llama.cpp server |
 | `WHISPERX_BASE_URL` | WhisperX `/diarize` endpoint (video/audio upload) |
-| `HF_TOKEN` | Hugging Face token for WhisperX diarization |
 | `TRANSCRIPTION_LANGUAGE` | Language code passed to WhisperX (default `en`) |
 | `WHISPERX_REQUEST_TIMEOUT` | Max seconds to wait for transcription (default 3600) |
 

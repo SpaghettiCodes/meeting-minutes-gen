@@ -23,7 +23,6 @@ class AppConfig:
     llm_model: str
     llm_api_key: str | None
     whisperx_base_url: str
-    hf_token: str | None
     transcription_language: str
     temperature: float
     request_timeout: float
@@ -67,7 +66,6 @@ def load_config(env_file: Path | None = None) -> AppConfig:
     )
     llm_api_key = os.getenv("LLM_API_KEY") or os.getenv("VLLM_API_KEY") or None
     whisperx_base_url = os.getenv("WHISPERX_BASE_URL") or DEFAULT_WHISPERX_BASE_URL
-    hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN") or None
     transcription_language = (
         os.getenv("TRANSCRIPTION_LANGUAGE") or DEFAULT_TRANSCRIPTION_LANGUAGE
     )
@@ -85,7 +83,6 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         llm_model=llm_model,
         llm_api_key=llm_api_key,
         whisperx_base_url=whisperx_base_url,
-        hf_token=hf_token,
         transcription_language=transcription_language,
         temperature=float(os.getenv("TEMPERATURE", "0.2")),
         request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT") or "600"),
