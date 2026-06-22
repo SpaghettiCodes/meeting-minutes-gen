@@ -89,17 +89,14 @@ class GenerationService:
                 for chunk in chunks
             ]
             raw_chunks_outputs = [future.result() for future in futures]
-        
-        # Step 3: Merge the raw chunks into your unified structure (Reduce)
+
         combined_raw_notes = "\n\n--- Chunk ---\n\n".join(raw_chunks_outputs)
-        
         structured_facts = self._complete(
             client,
             system_prompt=MERGE_FACTS_SYSTEM,
             user_prompt=MERGE_FACTS_USER.format(raw_notes=combined_raw_notes)
         )
-        
-        # Step 4: Render your final minutes using the template
+
         return self._render_minutes(client, template=template, facts=structured_facts)
 
     def _extract_meeting_facts(self, client: OpenAI, transcript: str) -> str:
