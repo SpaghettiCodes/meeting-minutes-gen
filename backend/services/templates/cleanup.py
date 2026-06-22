@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from backend.services.templates.prompts import BATCH_END_MARKER
+
 _GRID_LINE = re.compile(r"^\+[-+=| ]+\+$")
 _PANDOC_RULE = re.compile(r"^[-=]{10,}\s")
 _DOCUMENT_TAG = re.compile(r"</?document>", re.IGNORECASE)
@@ -15,6 +17,23 @@ _HEADER_FIELD = re.compile(
     re.IGNORECASE,
 )
 _BOLD_HEADING = re.compile(r"^\*\*(.+?)\*\*\s*$")
+
+
+def strip_batch_markers(content: str) -> str:
+    lines = [
+        line
+        for line in content.splitlines()
+        if line.strip() != BATCH_END_MARKER
+    ]
+    collapsed = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
+    return collapsed.strip()
+
+
+def ensure_batch_end_marker(content: str) -> str:
+    cleaned = strip_batch_markers(content)
+    if not cleaned:
+        return cleaned
+    return f"{cleaned}\n\n{BATCH_END_MARKER}"
 
 
 def strip_document_header(content: str) -> str:
@@ -51,6 +70,8 @@ def sanitize_template_draft(content: str) -> str:
             output.append("")
             continue
         if _DOCUMENT_TAG.search(stripped):
+            continue
+        if stripped == BATCH_END_MARKER:
             continue
         if _GRID_LINE.match(stripped):
             continue

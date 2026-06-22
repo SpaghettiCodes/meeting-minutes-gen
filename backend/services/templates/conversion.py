@@ -12,7 +12,12 @@ from backend.models.domain import TextDocument
 from backend.services.exceptions import ExternalAPIError, ValidationError
 from backend.services.generation.service import GenerationService
 from backend.services.gemini.client import build_chat_client
-from backend.services.templates.cleanup import sanitize_template_draft, strip_document_header
+from backend.services.templates.cleanup import (
+    ensure_batch_end_marker,
+    sanitize_template_draft,
+    strip_batch_markers,
+    strip_document_header,
+)
 from backend.services.templates.document_chunks import split_document_structured
 from backend.services.templates.preprocess import preprocess_extracted_text
 from backend.services.templates.prompts import (
@@ -24,7 +29,8 @@ from backend.services.templates.prompts import (
 )
 
 TEMPLATE_SOURCE_EXTENSIONS = {".docx", ".pdf"}
-_CHUNK_PROMPT_OVERHEAD_CHARS = 700
+_CHUNK_PROMPT_OVERHEAD_CHARS = 1200
+_PRIOR_TEMPLATE_MAX_CHARS = 48_000
 
 
 class TemplateConversionService:
@@ -114,6 +120,7 @@ class TemplateConversionService:
             raise ExternalAPIError("Could not split document for template conversion.")
 
         templates: list[str] = []
+        prior_batches: list[str] = []
         total = len(structured_chunks)
         for index, chunk in enumerate(structured_chunks, start=1):
             document_content = self._prepare_llm_source(chunk.content)
@@ -132,15 +139,17 @@ class TemplateConversionService:
                 part_count=total,
                 section_titles=section_titles,
                 header_instruction=header_instruction,
+                prior_template=self._format_prior_template(prior_batches),
                 document_content=document_content,
             )
             try:
-                templates.append(
-                    self._generate_llm_template(
-                        document_content,
-                        user_prompt=user_prompt,
-                    )
+                batch = self._generate_llm_template(
+                    document_content,
+                    user_prompt=user_prompt,
                 )
+                batch = ensure_batch_end_marker(batch)
+                prior_batches.append(strip_batch_markers(batch))
+                templates.append(batch)
             except Exception as exc:
                 raise ExternalAPIError(
                     f"Error calling Gemini API for chunk {index}/{total}: {exc}"
@@ -234,10 +243,39 @@ class TemplateConversionService:
         return self._clean_output(content.strip())
 
     @staticmethod
+    def _format_prior_template(prior_batches: list[str]) -> str:
+        if not prior_batches:
+            return "None — this is the first chunk."
+
+        combined = "\n\n".join(
+            f"--- Batch {index} ---\n{strip_batch_markers(batch)}"
+            for index, batch in enumerate(prior_batches, start=1)
+        )
+        if len(combined) <= _PRIOR_TEMPLATE_MAX_CHARS:
+            return combined
+
+        trimmed_batches: list[str] = []
+        remaining = _PRIOR_TEMPLATE_MAX_CHARS
+        for batch in reversed(prior_batches):
+            section = f"--- Batch ---\n{strip_batch_markers(batch)}"
+            if len(section) > remaining:
+                if remaining > 512:
+                    trimmed_batches.insert(0, section[-remaining:])
+                break
+            trimmed_batches.insert(0, section)
+            remaining -= len(section) + 2
+
+        note = (
+            "[Earlier batches truncated for length. "
+            "Do not repeat any section heading shown below.]\n\n"
+        )
+        return note + "\n\n".join(trimmed_batches)
+
+    @staticmethod
     def _aggregate_chunk_templates(templates: list[str]) -> str:
         parts: list[str] = []
         for index, part in enumerate(templates):
-            cleaned = part.strip()
+            cleaned = strip_batch_markers(part.strip())
             if not cleaned:
                 continue
             if index > 0:
@@ -265,7 +303,9 @@ class TemplateConversionService:
         cleaned = GenerationService._clean_output(content)
         cleaned = sanitize_template_draft(cleaned)
         cleaned = _strip_trailing_commentary(cleaned)
+        cleaned = strip_batch_markers(cleaned)
         cleaned = re.sub(r"</?document>", "", cleaned, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r"</?prior_template>", "", cleaned, flags=re.IGNORECASE).strip()
         drop_prefixes = (
             "<document>",
             "</document>",

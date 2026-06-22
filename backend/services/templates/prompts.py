@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+BATCH_END_MARKER = "=== END OF BATCH TEMPLATE ==="
+
 TEMPLATE_CONVERSION_SYSTEM = """\
 You convert a filled example meeting-minutes document into a reusable markdown TEMPLATE.
 
@@ -53,8 +55,15 @@ Example field table (pipe or HTML both OK):
 - Field/value tables: one row per label with placeholders
 
 ## Do not output
-- XML/HTML wrapper tags from the prompt (<document>, </document>)
+- XML/HTML wrapper tags from the prompt (<document>, </document>, <prior_template>, \
+</prior_template>)
 - Self-check lists or commentary after the template
+
+## Multi-chunk conversion
+When converting one chunk of a larger document:
+- Read <prior_template> to see sections already converted in earlier chunks
+- Output ONLY new sections for this chunk — never repeat prior sections or headings
+- End output with this exact line on its own: === END OF BATCH TEMPLATE ===
 
 Verify silently. Output markdown only. Start immediately with template content.
 """
@@ -78,15 +87,21 @@ Convert chunk {part_index} of {part_count} into template markdown.
 Sections in this chunk: {section_titles}
 {header_instruction}
 
+Template already produced in earlier chunks (do NOT repeat any of this):
+<prior_template>
+{prior_template}
+</prior_template>
+
+Source excerpt for this chunk only:
 {document_content}
 
 Same rules: structure and column headers stay; all data cells = [Placeholder] only. \
 No real names, dates, specs, or copied prose. Pipe or HTML tables OK. \
 Max 3 placeholder rows per repeating table in this chunk. \
-Output ONLY the sections listed above — do not add other sections or repeat content \
-from earlier chunks.
+Continue the template after the prior batches — output ONLY the sections listed above.
 
-Output this chunk now.
+End with this exact line on its own:
+=== END OF BATCH TEMPLATE ===
 """
 
 TEMPLATE_REPAIR_SYSTEM = """\
