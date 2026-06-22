@@ -31,6 +31,7 @@ function AppContent() {
               kind="transcripts"
               refreshToken={refreshToken}
               onFilesChanged={bumpRefresh}
+              onViewTasks={() => setActiveView("tasks")}
             />
           )}
           {activeView === "templates" && (

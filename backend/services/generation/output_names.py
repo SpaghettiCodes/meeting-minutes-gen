@@ -16,3 +16,7 @@ def output_name_for_generation(*, at: datetime | None = None) -> str:
 
 def template_output_name_for_task(*, task_id: str) -> str:
     return f"template-{task_id}.md"
+
+
+def transcript_output_name_for_task(*, task_id: str) -> str:
+    return f"transcript-{task_id}.txt"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from backend.models.task import ConvertTemplateTaskPayload, GenerateTaskPayload, Task
+from backend.models.task import ConvertTemplateTaskPayload, GenerateTaskPayload, TranscribeTaskPayload, Task
 from backend.schemas import TaskSummary
 
 
@@ -13,6 +13,8 @@ def task_to_summary(task: Task) -> TaskSummary:
         transcript_name = task.payload.transcript_name
         template_name = task.payload.template_name
     elif isinstance(task.payload, ConvertTemplateTaskPayload):
+        source_filename = task.payload.source_filename
+    elif isinstance(task.payload, TranscribeTaskPayload):
         source_filename = task.payload.source_filename
 
     return TaskSummary(

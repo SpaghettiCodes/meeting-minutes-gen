@@ -28,6 +28,7 @@ class AppConfig:
     temperature: float
     request_timeout: float
     template_conversion_sources_dir: Path
+    transcription_sources_dir: Path
     transcript_dir: Path
     template_dir: Path
     output_dir: Path
@@ -97,6 +98,10 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         template_conversion_sources_dir=resolve_dir(
             "TEMPLATE_CONVERSION_SOURCES_DIR",
             "data/template_sources",
+        ),
+        transcription_sources_dir=resolve_dir(
+            "TRANSCRIPTION_SOURCES_DIR",
+            "data/transcription_sources",
         ),
         transcript_dir=resolve_dir("TRANSCRIPT_DIR", "data/transcripts"),
         template_dir=resolve_dir("TEMPLATE_DIR", "data/templates"),

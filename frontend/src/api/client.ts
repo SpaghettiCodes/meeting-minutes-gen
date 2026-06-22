@@ -8,7 +8,6 @@ import type {
   TaskDetail,
   TaskSummary,
   TextFileContent,
-  TranscribeResponse,
   UploadResponse,
 } from "../types";
 
@@ -73,10 +72,12 @@ export async function uploadFile(
   });
 }
 
-export async function transcribeMedia(file: File): Promise<TranscribeResponse> {
+export async function createTranscribeTask(
+  file: File,
+): Promise<CreateTaskResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  return request<TranscribeResponse>("/api/transcripts/transcribe", {
+  return request<CreateTaskResponse>("/api/tasks/transcribe", {
     method: "POST",
     body: formData,
   });

@@ -43,12 +43,6 @@ class GenerateResponse(BaseModel):
     message: str = "Meeting minutes generated successfully."
 
 
-class TranscribeResponse(BaseModel):
-    name: str
-    content: str
-    message: str = "Transcript generated successfully."
-
-
 class ConvertTemplateResponse(BaseModel):
     name: str
     content: str
@@ -74,7 +68,7 @@ class CreateTaskResponse(BaseModel):
 
 class TaskSummary(BaseModel):
     id: str
-    type: Literal["generate", "convert_template"]
+    type: Literal["generate", "convert_template", "transcribe"]
     status: Literal["pending", "running", "completed", "failed"]
     created_at: datetime
     started_at: datetime | None = None

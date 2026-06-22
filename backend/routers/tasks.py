@@ -70,6 +70,31 @@ async def create_convert_template_task(
     )
 
 
+@router.post(
+    "/transcribe",
+    response_model=CreateTaskResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def create_transcribe_task(
+    file: UploadFile = File(...),
+    service: TaskService = Depends(get_task_service),
+) -> CreateTaskResponse:
+    raw = await file.read()
+    try:
+        task = service.create_transcribe_task(
+            source_filename=file.filename or "",
+            raw=raw,
+        )
+    except ServiceError as exc:
+        raise_http_error(exc)
+
+    return CreateTaskResponse(
+        task_id=task.id,
+        status=task.status,
+        message="Transcription task queued.",
+    )
+
+
 @router.get("", response_model=list[TaskSummary])
 def list_tasks(
     active_only: bool = Query(default=False),

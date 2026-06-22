@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createConvertTemplateTask,
+  createTranscribeTask,
   deleteFile,
   formatBytes,
   formatDate,
   getFile,
   listFiles,
-  transcribeMedia,
   uploadFile,
 } from "../api/client";
 import { useTasks } from "../context/TaskContext";
@@ -173,9 +173,12 @@ export function FileLibrary({
     try {
       for (const file of Array.from(fileList)) {
         if (kind === "transcripts" && isMediaFile(file)) {
-          const result = await transcribeMedia(file);
-          setSelectedName(result.name);
-          setPreview(result.content);
+          await createTranscribeTask(file);
+          await refreshTasks();
+          setSuccess(
+            `Queued transcription for "${file.name}". Track progress in Tasks.`,
+          );
+          onViewTasks?.();
         } else if (kind === "templates" && isTemplateSourceFile(file)) {
           await createConvertTemplateTask(file);
           await refreshTasks();
@@ -284,7 +287,7 @@ export function FileLibrary({
                 disabled={uploading}
                 onClick={() => mediaInputRef.current?.click()}
               >
-                {uploading ? "Transcribing…" : "Transcribe video/audio"}
+                {uploading ? "Queuing…" : "Transcribe video/audio"}
               </button>
             )}
             {kind === "templates" && (

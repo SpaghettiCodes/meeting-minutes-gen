@@ -5,19 +5,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from backend.models.config import AppConfig
-from backend.models.task import ConvertTemplateTaskPayload, GenerateTaskPayload, Task
+from backend.models.task import (
+    ConvertTemplateTaskPayload,
+    GenerateTaskPayload,
+    Task,
+    TranscribeTaskPayload,
+)
 from backend.services.exceptions import NotFoundError, ServiceError, ValidationError
 from backend.services.files.service import FileService
 from backend.services.generation.service import GenerationService
 from backend.services.generation.output_names import (
     output_name_for_task,
     template_output_name_for_task,
+    transcript_output_name_for_task,
 )
 from backend.services.tasks.broadcaster import TaskBroadcaster
 from backend.services.tasks.mappers import task_to_summary
 from backend.services.tasks.store import TaskStore
 from backend.services.templates.conversion import TemplateConversionService
 from backend.services.templates.service import TemplateService
+from backend.services.transcripts.service import TranscriptService
+from backend.services.transcripts.transcription import TranscriptionService
 
 
 class TaskService:
@@ -30,10 +38,12 @@ class TaskService:
         )
         self._generation = GenerationService(config)
         self._templates = TemplateService(config)
-        self._transcripts = FileService(config.transcript_dir)
+        self._transcripts = TranscriptService(config)
+        self._transcript_files = FileService(config.transcript_dir)
         self._template_files = FileService(config.template_dir)
         self._output = FileService(config.output_dir)
         self._conversion_sources_dir = config.template_conversion_sources_dir
+        self._transcription_sources_dir = config.transcription_sources_dir
         self._broadcaster = TaskBroadcaster()
         self._queue: asyncio.Queue[str] = asyncio.Queue()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -100,7 +110,7 @@ class TaskService:
         transcript_name: str,
         template_name: str,
     ) -> Task:
-        self._transcripts.resolve_path(transcript_name)
+        self._transcript_files.resolve_path(transcript_name)
         self._template_files.resolve_path(template_name)
 
         task = Task.create_generate(
@@ -146,6 +156,39 @@ class TaskService:
         self._schedule_broadcast()
         return task
 
+    def create_transcribe_task(self, *, source_filename: str, raw: bytes) -> Task:
+        if not source_filename:
+            raise ValidationError("Filename is required.")
+        if not raw:
+            raise ValidationError("Uploaded file is empty.")
+        if not TranscriptionService.is_media_filename(source_filename):
+            extensions = ", ".join(sorted(TranscriptionService.supported_media_extensions()))
+            raise ValidationError(
+                f"Unsupported media type. Supported extensions: {extensions}"
+            )
+
+        source_name = Path(source_filename).name
+        task = Task.create_transcribe(
+            TranscribeTaskPayload(
+                source_filename=source_name,
+                staging_name="",
+            )
+        )
+        task.output_name = transcript_output_name_for_task(task_id=task.id)
+        staging_name = self._save_transcription_source(
+            task_id=task.id,
+            source_filename=source_name,
+            raw=raw,
+        )
+        task.payload = TranscribeTaskPayload(
+            source_filename=source_name,
+            staging_name=staging_name,
+        )
+        self._store.save(task)
+        self._enqueue(task.id)
+        self._schedule_broadcast()
+        return task
+
     def list_tasks(self, *, active_only: bool = False) -> list[Task]:
         tasks = self._store.list_all()
         if active_only:
@@ -162,6 +205,8 @@ class TaskService:
         try:
             if task.type == "convert_template":
                 return self._template_files.get_file(task.output_name).content
+            if task.type == "transcribe":
+                return self._transcript_files.get_file(task.output_name).content
             return self._output.get_file(task.output_name).content
         except NotFoundError:
             return None
@@ -185,6 +230,19 @@ class TaskService:
             self._schedule_broadcast()
         return deleted
 
+    def delete_tasks_for_transcript(self, transcript_name: str) -> int:
+        for document in self._store.find_for_transcript_delete(transcript_name):
+            if document.get("type") != "transcribe":
+                continue
+            staging_name = document.get("payload", {}).get("staging_name")
+            if staging_name:
+                self._delete_transcription_source(staging_name)
+
+        deleted = self._store.delete_by_transcript_name(transcript_name)
+        if deleted:
+            self._schedule_broadcast()
+        return deleted
+
     def _save_conversion_source(
         self,
         *,
@@ -203,6 +261,27 @@ class TaskService:
         if not staging_name:
             return
         path = self._conversion_sources_dir / staging_name
+        if path.is_file():
+            path.unlink()
+
+    def _save_transcription_source(
+        self,
+        *,
+        task_id: str,
+        source_filename: str,
+        raw: bytes,
+    ) -> str:
+        suffix = Path(source_filename).suffix.lower()
+        staging_name = f"{task_id}{suffix}"
+        self._transcription_sources_dir.mkdir(parents=True, exist_ok=True)
+        path = self._transcription_sources_dir / staging_name
+        path.write_bytes(raw)
+        return staging_name
+
+    def _delete_transcription_source(self, staging_name: str) -> None:
+        if not staging_name:
+            return
+        path = self._transcription_sources_dir / staging_name
         if path.is_file():
             path.unlink()
 
@@ -253,6 +332,8 @@ class TaskService:
                 await self._run_generate_task(task)
             elif task.type == "convert_template":
                 await self._run_convert_template_task(task)
+            elif task.type == "transcribe":
+                await self._run_transcribe_task(task)
             else:
                 raise ValidationError(f"Unsupported task type: {task.type}")
             task.status = "completed"
@@ -302,3 +383,27 @@ class TaskService:
             )
         finally:
             self._delete_conversion_source(task.payload.staging_name)
+
+    async def _run_transcribe_task(self, task: Task) -> None:
+        if not isinstance(task.payload, TranscribeTaskPayload):
+            raise ValidationError("Invalid transcribe task payload.")
+
+        staging_path = self._transcription_sources_dir / task.payload.staging_name
+        if not staging_path.is_file():
+            raise NotFoundError(
+                f"Transcription source file not found: {task.payload.source_filename}"
+            )
+
+        try:
+            raw = staging_path.read_bytes()
+            if not task.output_name:
+                raise ValidationError("Transcribe task is missing output_name.")
+            saved = await asyncio.to_thread(
+                self._transcripts.transcribe_to_file,
+                task.payload.source_filename,
+                raw,
+                output_name=task.output_name,
+            )
+            task.output_name = saved.name
+        finally:
+            self._delete_transcription_source(task.payload.staging_name)

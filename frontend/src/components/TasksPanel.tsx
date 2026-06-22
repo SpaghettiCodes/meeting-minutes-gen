@@ -15,6 +15,7 @@ const STATUS_LABEL: Record<TaskStatus, string> = {
 const TASK_TYPE_LABEL: Record<TaskType, string> = {
   generate: "Generate minutes",
   convert_template: "Convert template",
+  transcribe: "Transcribe media",
 };
 
 function formatDuration(startedAt: string | null, finishedAt: string | null): string | null {
@@ -34,14 +35,20 @@ function formatDuration(startedAt: string | null, finishedAt: string | null): st
 }
 
 function taskDescription(task: TaskSummary): string {
-  if (task.type === "convert_template") {
-    return task.source_filename ?? "Template conversion";
+  if (task.type === "convert_template" || task.type === "transcribe") {
+    return task.source_filename ?? TASK_TYPE_LABEL[task.type];
   }
   return `${task.transcript_name ?? "?"} · ${task.template_name ?? "?"}`;
 }
 
 function resultTitle(taskType: TaskType): string {
-  return taskType === "convert_template" ? "Template" : "Meeting minutes";
+  if (taskType === "convert_template") {
+    return "Template";
+  }
+  if (taskType === "transcribe") {
+    return "Transcript";
+  }
+  return "Meeting minutes";
 }
 
 interface TasksPanelProps {
@@ -162,7 +169,7 @@ export function TasksPanel({ onGenerated }: TasksPanelProps) {
           <div>
             <h2 className="m-0 text-xl font-semibold">Tasks</h2>
             <p className="m-0 text-stone-600">
-              Track background generation and template conversion jobs. You can leave this page while they run.
+              Track background generation, transcription, and template conversion jobs. You can leave this page while they run.
             </p>
           </div>
           <button type="button" className="btn" onClick={() => void refreshTasks()}>

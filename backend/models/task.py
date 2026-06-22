@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from uuid import uuid4
 
-TaskType = Literal["generate", "convert_template"]
+TaskType = Literal["generate", "convert_template", "transcribe"]
 TaskStatus = Literal["pending", "running", "completed", "failed"]
 
 
@@ -21,7 +21,13 @@ class ConvertTemplateTaskPayload:
     staging_name: str
 
 
-TaskPayload = GenerateTaskPayload | ConvertTemplateTaskPayload
+@dataclass
+class TranscribeTaskPayload:
+    source_filename: str
+    staging_name: str
+
+
+TaskPayload = GenerateTaskPayload | ConvertTemplateTaskPayload | TranscribeTaskPayload
 
 
 @dataclass
@@ -51,6 +57,16 @@ class Task:
         return cls(
             id=str(uuid4()),
             type="convert_template",
+            status="pending",
+            created_at=datetime.now(timezone.utc),
+            payload=payload,
+        )
+
+    @classmethod
+    def create_transcribe(cls, payload: TranscribeTaskPayload) -> Task:
+        return cls(
+            id=str(uuid4()),
+            type="transcribe",
             status="pending",
             created_at=datetime.now(timezone.utc),
             payload=payload,

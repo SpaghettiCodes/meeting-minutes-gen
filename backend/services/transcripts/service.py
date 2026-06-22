@@ -23,10 +23,11 @@ class TranscriptService:
             raise ValidationError("Filename is required.")
         return self._files.save_file(filename, content)
 
-    def transcribe_media(self, filename: str, raw: bytes) -> TextDocument:
+    def transcribe_to_file(self, filename: str, raw: bytes, *, output_name: str) -> SavedFile:
+        if not filename:
+            raise ValidationError("Filename is required.")
         document = self._transcription.transcribe(filename, raw)
-        saved = self._files.save_file(document.name, document.content)
-        return TextDocument(name=saved.name, content=document.content)
+        return self._files.save_file(output_name, document.content)
 
     def delete_transcript(self, filename: str) -> SavedFile:
         return self._files.delete_file(filename)

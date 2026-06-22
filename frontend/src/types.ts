@@ -25,12 +25,6 @@ export interface GenerateResponse {
   message: string;
 }
 
-export interface TranscribeResponse {
-  name: string;
-  content: string;
-  message: string;
-}
-
 export interface ConvertTemplateResponse {
   name: string;
   content: string;
@@ -43,7 +37,7 @@ export type ExportFormat = "docx" | "pdf";
 
 export type TaskStatus = "pending" | "running" | "completed" | "failed";
 
-export type TaskType = "generate" | "convert_template";
+export type TaskType = "generate" | "convert_template" | "transcribe";
 
 export interface TaskSummary {
   id: string;

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from backend.dependencies import get_transcript_service
+from backend.dependencies import get_task_service, get_transcript_service
 from backend.routers.http_errors import raise_http_error
-from backend.schemas import DeleteResponse, FileMetadata, TextFileContent, TranscribeResponse, UploadResponse
+from backend.schemas import DeleteResponse, FileMetadata, TextFileContent, UploadResponse
 from backend.services.exceptions import ServiceError
+from backend.services.tasks import TaskService
 from backend.services.transcripts import TranscriptService
 
 router = APIRouter(prefix="/transcripts", tags=["transcripts"])
@@ -25,20 +26,6 @@ def list_transcripts(
     ]
 
 
-@router.post("/transcribe", response_model=TranscribeResponse, status_code=201)
-async def transcribe_media(
-    file: UploadFile = File(...),
-    service: TranscriptService = Depends(get_transcript_service),
-) -> TranscribeResponse:
-    raw = await file.read()
-    try:
-        document = service.transcribe_media(file.filename or "", raw)
-    except ServiceError as exc:
-        raise_http_error(exc)
-
-    return TranscribeResponse(name=document.name, content=document.content)
-
-
 @router.get("/{filename}", response_model=TextFileContent)
 def get_transcript(
     filename: str,
@@ -56,9 +43,11 @@ def get_transcript(
 def delete_transcript(
     filename: str,
     service: TranscriptService = Depends(get_transcript_service),
+    task_service: TaskService = Depends(get_task_service),
 ) -> DeleteResponse:
     try:
         deleted = service.delete_transcript(filename)
+        task_service.delete_tasks_for_transcript(deleted.name)
     except ServiceError as exc:
         raise_http_error(exc)
 

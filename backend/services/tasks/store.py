@@ -11,6 +11,7 @@ from backend.models.task import (
     GenerateTaskPayload,
     Task,
     TaskPayload,
+    TranscribeTaskPayload,
 )
 from backend.services.exceptions import NotFoundError
 
@@ -74,6 +75,11 @@ class TaskStore:
                 source_filename=payload_data["source_filename"],
                 staging_name=payload_data["staging_name"],
             )
+        if task_type == "transcribe":
+            return TranscribeTaskPayload(
+                source_filename=payload_data["source_filename"],
+                staging_name=payload_data["staging_name"],
+            )
         return GenerateTaskPayload(
             transcript_name=payload_data["transcript_name"],
             template_name=payload_data["template_name"],
@@ -115,11 +121,32 @@ class TaskStore:
         result = self._collection.delete_many(self._template_delete_filter(template_name))
         return result.deleted_count
 
+    def find_for_transcript_delete(self, transcript_name: str) -> list[dict]:
+        return list(
+            self._collection.find(
+                self._transcript_delete_filter(transcript_name),
+                {"type": 1, "payload.staging_name": 1},
+            )
+        )
+
+    def delete_by_transcript_name(self, transcript_name: str) -> int:
+        result = self._collection.delete_many(self._transcript_delete_filter(transcript_name))
+        return result.deleted_count
+
     @staticmethod
     def _template_delete_filter(template_name: str) -> dict:
         return {
             "$or": [
                 {"output_name": template_name},
                 {"type": "generate", "payload.template_name": template_name},
+            ]
+        }
+
+    @staticmethod
+    def _transcript_delete_filter(transcript_name: str) -> dict:
+        return {
+            "$or": [
+                {"type": "transcribe", "output_name": transcript_name},
+                {"type": "generate", "payload.transcript_name": transcript_name},
             ]
         }
