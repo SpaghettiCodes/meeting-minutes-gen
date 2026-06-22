@@ -13,8 +13,6 @@ from backend.services.llm.client import build_chat_client
 from backend.services.llm.completion import chat_completion_text, create_chat_completion
 from backend.services.generation.output_names import output_name_for_generation
 from backend.services.generation.prompts import (
-    MEETING_FACTS_SYSTEM,
-    MEETING_FACTS_USER,
     MINUTES_RENDER_SYSTEM,
     MINUTES_RENDER_USER,
     CHUNK_FACTS_SYSTEM,
@@ -77,6 +75,7 @@ class GenerationService:
         client = self._client()
 
         chunks = self._chunk_transcript(transcript, max_words=2000)
+        print(f"chunked {len(chunks)} chunks")
 
         with ThreadPoolExecutor() as executor:
             futures = [
@@ -88,24 +87,20 @@ class GenerationService:
                 )
                 for chunk in chunks
             ]
-            raw_chunks_outputs = [future.result() for future in futures]
+            raw_chunks_outputs = [self._clean_output(future.result()) for future in futures]
 
         combined_raw_notes = "\n\n--- Chunk ---\n\n".join(raw_chunks_outputs)
+        print(f"combined_raw_notes:\n\n{combined_raw_notes}")
+        
         structured_facts = self._complete(
             client,
             system_prompt=MERGE_FACTS_SYSTEM,
             user_prompt=MERGE_FACTS_USER.format(raw_notes=combined_raw_notes)
         )
+        structured_facts = self._clean_output(structured_facts)
+        print(f"structured_facts:\n\n{structured_facts}")
 
         return self._render_minutes(client, template=template, facts=structured_facts)
-
-    def _extract_meeting_facts(self, client: OpenAI, transcript: str) -> str:
-        content = self._complete(
-            client,
-            system_prompt=MEETING_FACTS_SYSTEM,
-            user_prompt=MEETING_FACTS_USER.format(transcript=transcript),
-        )
-        return self._clean_output(content)
 
     def _render_minutes(self, client: OpenAI, *, template: str, facts: str) -> str:
         content = self._complete(
@@ -133,6 +128,7 @@ class GenerationService:
                 {"role": "user", "content": user_prompt},
             ],
             temperature=self._config.temperature,
+            frequency_penalty=0.3,
         )
 
         return chat_completion_text(response)

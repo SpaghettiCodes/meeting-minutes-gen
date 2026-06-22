@@ -17,12 +17,14 @@ def create_chat_completion(
     messages: list[dict[str, str]],
     temperature: float,
     max_tokens: int | None = None,
+    frequency_penalty=0.3,
 ) -> ChatCompletion:
     """Call chat completions like llama.cpp UI — omit max_tokens unless explicitly set."""
     kwargs: dict[str, Any] = {
         "model": model,
         "messages": messages,
         "temperature": temperature,
+        "frequency_penalty": frequency_penalty
     }
     if max_tokens is not None:
         kwargs["max_tokens"] = max_tokens
