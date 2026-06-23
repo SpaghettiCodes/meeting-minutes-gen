@@ -12,6 +12,7 @@ Output = same skeleton, zero meeting-specific content. Another system fills plac
 - Format notes (e.g. "Note: Timings are in HH:MM:SS 24-Hours Format")
 - Section order from the source
 - Each section keeps its own table column set — do not reuse the agenda table layout for action-item sections
+- Inline metadata labels/keys preceding a value (e.g., "Date:", "Time:", "Location:", "Chairperson:") must be kept exactly as they are. Only replace the variable data following the label with a placeholder (e.g., "Location: [Location]").
 
 ## Replace with [Placeholders] — everything else
 Use single-bracket form only: [Date], never [[Date]].
@@ -23,6 +24,7 @@ Use single-bracket form only: [Date], never [[Date]].
 - Status values → [Status]
 - Hardware, software, specs, project names → [Details] or [Notes]
 - All notes, bullets, lists, paragraphs in cells → [Notes] or [Details]
+- Overall document titles or project names → # [Document Title]
 
 Never copy example prose, names, dates, times, specs, or task text into output. If unsure, use a placeholder.
 

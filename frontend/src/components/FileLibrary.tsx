@@ -14,6 +14,7 @@ import { cn } from "../lib/cn";
 import type { FileMetadata, LibraryKind } from "../types";
 import { ConfirmModal } from "./ConfirmModal";
 import { MinutesOutput } from "./MinutesOutput";
+import { Trash2 } from "lucide-react";
 
 const LIBRARY_COPY: Record<
   LibraryKind,
@@ -54,27 +55,6 @@ function isMediaFile(file: File): boolean {
 function isTemplateSourceFile(file: File): boolean {
   const name = file.name.toLowerCase();
   return Array.from(TEMPLATE_SOURCE_EXTENSIONS).some((ext) => name.endsWith(ext));
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 6h18" />
-      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>
-  );
 }
 
 interface FileLibraryProps {
@@ -372,7 +352,7 @@ export function FileLibrary({
                   disabled={deletingName === file.name}
                   onClick={() => setPendingDelete(file.name)}
                 >
-                  <TrashIcon />
+                  <Trash2 className="size-4"/>
                 </button>
               </div>
             ))
