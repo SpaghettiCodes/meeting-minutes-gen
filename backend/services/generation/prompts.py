@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 CHUNK_FACTS_SYSTEM = """\
 You are an expert meeting analyst. Your goal is to extract exhaustive, deep-dive factual notes from a transcript chunk.
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 BATCH_END_MARKER = "=== END OF BATCH TEMPLATE ==="
 
 TEMPLATE_CONVERSION_SYSTEM = """\
