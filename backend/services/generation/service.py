@@ -90,7 +90,7 @@ class GenerationService:
             raw_chunks_outputs = [self._clean_output(future.result()) for future in futures]
 
         combined_raw_notes = "\n\n--- Chunk ---\n\n".join(raw_chunks_outputs)
-        print(f"combined_raw_notes:\n\n{combined_raw_notes}")
+        print(f"\n=============\ncombined_raw_notes:\n\n{combined_raw_notes}")
         
         structured_facts = self._complete(
             client,
@@ -98,7 +98,7 @@ class GenerationService:
             user_prompt=MERGE_FACTS_USER.format(raw_notes=combined_raw_notes)
         )
         structured_facts = self._clean_output(structured_facts)
-        print(f"structured_facts:\n\n{structured_facts}")
+        print(f"\n=============\nstructured_facts:\n\n{structured_facts}")
 
         return self._render_minutes(client, template=template, facts=structured_facts)
 

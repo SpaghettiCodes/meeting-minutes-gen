@@ -9,44 +9,33 @@ Output = same skeleton, zero meeting-specific content. Another system fills plac
 
 ## Keep unchanged (labels & structure only)
 - Section headings (e.g. "## Meeting Minutes", "## Previous Action Items")
-- Table column headers (Time, PIC, Topic, Notes, Action Item, Deadline, Owner, Status, \
-Field, Details)
+- Table column headers (Time, PIC, Topic, Notes, Action Item, Deadline, Owner, Status, Field, Details)
 - Subsection headings that label structure (e.g. "### Semester Break Progress Review")
 - Format notes (e.g. "Note: Timings are in HH:MM:SS 24-Hours Format")
 - Section order from the source
-- Each section keeps its own table column set — do not reuse the agenda table layout \
-for action-item sections
+- Each section keeps its own table column set — do not reuse the agenda table layout for action-item sections
 
 ## Replace with [Placeholders] — everything else
 Use single-bracket form only: [Date], never [[Date]].
 - Person names → [PIC], [Owner], [Attendee], [Participant], [Minute-taker], [Chairperson]
 - Dates, times, deadlines → [Date], [Time], [Deadline], [Start Time], [End Time]
 - Locations, platforms → [Location], [Platform]
-- Topic/agenda titles in data cells → [Topic] — not "Opening & Attendance", \
-"Review of Previous Action Items", etc.
+- Topic/agenda titles in data cells → [Topic]
 - Action descriptions → [Action Item]
 - Status values → [Status]
 - Hardware, software, specs, project names → [Details] or [Notes]
 - All notes, bullets, lists, paragraphs in cells → [Notes] or [Details]
 
-Never copy example prose, names, dates, times, specs, or task text into output. \
-If unsure, use a placeholder.
+Never copy example prose, names, dates, times, specs, or task text into output. If unsure, use a placeholder.
 
-## Tables
-Pipe tables or HTML tables are both fine. Pick whichever matches the source layout.
-- Pipe table: header | separator | body rows
-- HTML table: valid <table> with <thead>/<tbody>, lists in cells may use <ul>/<ol>
-- No grid/ascii tables (+---+, || double pipes)
-- No pandoc plain-text tables (dashed lines, aligned columns without pipes)
-- No code fences (```)
-- No broken or partial table syntax
+## Tables & Cell Line Breaks
+Pipe tables break if raw newlines or markdown syntax like "- point" are placed inside a cell row. To allow multiple paragraphs and bullet points inside a single table cell without breaking markdown rendering, placeholders inside cells must use clean HTML tags.
+- Separate paragraphs inside a cell with a <br><br> tag.
+- Create list items inside a cell using explicit HTML list tags: <ul><li>[Point 1]</li><li>[Point 2]</li></ul>
+- Never include raw newlines inside a table pipe row entry. Keep the entire row string on a single literal text line.
 
-Example field table (pipe or HTML both OK):
-
-| Field    | Details    |
-|----------|------------|
-| Location | [Location] |
-| Date     | [Date]     |
+Example of a valid template row format:
+| [Time] | [PIC] | [Topic] | [Notes Overview Paragraph]<br><br><ul><li>[Detail Point 1]</li><li>[Detail Point 2]</li></ul> |
 
 ## Row count & dedup
 - Repeating tables (agenda, action items): exactly 2–3 placeholder data rows
@@ -55,8 +44,7 @@ Example field table (pipe or HTML both OK):
 - Field/value tables: one row per label with placeholders
 
 ## Do not output
-- XML/HTML wrapper tags from the prompt (<document>, </document>, <prior_template>, \
-</prior_template>)
+- XML/HTML wrapper tags from the prompt (<document>, </document>, <prior_template>, </prior_template>)
 - Self-check lists or commentary after the template
 
 ## Multi-chunk conversion
@@ -73,10 +61,7 @@ Convert the example below into a reusable template.
 
 {document_content}
 
-Rules: headers and column names stay; every data cell = [Placeholder] only. \
-No real names, dates, times, specs, or meeting narrative. \
-Pipe or HTML tables OK. Max 3 placeholder rows per repeating table. \
-Each section uses its correct column headers.
+Rules: headers and column names stay; every data cell = [Placeholder] only. No real names, dates, times, specs, or meeting narrative. Pipe tables must maintain single-line syntax using HTML elements for multi-line cell text. Max 3 placeholder rows per repeating table.
 
 Output the template now.
 """
@@ -95,10 +80,7 @@ Template already produced in earlier chunks (do NOT repeat any of this):
 Source excerpt for this chunk only:
 {document_content}
 
-Same rules: structure and column headers stay; all data cells = [Placeholder] only. \
-No real names, dates, specs, or copied prose. Pipe or HTML tables OK. \
-Max 3 placeholder rows per repeating table in this chunk. \
-Continue the template after the prior batches — output ONLY the sections listed above.
+Same rules: structure and column headers stay; all data cells = [Placeholder] only. No real names, dates, specs, or copied prose. Pipe tables must use HTML elements inside cells for multi-line formatting to prevent markdown table breakage. Max 3 placeholder rows per repeating table in this chunk. Continue the template after the prior batches — output ONLY the sections listed above.
 
 End with this exact line on its own:
 === END OF BATCH TEMPLATE ===

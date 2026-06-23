@@ -17,7 +17,6 @@ from backend.services.llm.completion import (
 )
 from backend.services.templates.cleanup import ensure_batch_end_marker, strip_batch_markers
 from backend.services.templates.document_chunks import split_document_structured
-from backend.services.templates.preprocess import preprocess_extracted_text
 from backend.services.templates.prompts import (
     TEMPLATE_CONVERSION_CHUNK_USER,
     TEMPLATE_CONVERSION_SYSTEM,
@@ -67,10 +66,6 @@ class TemplateConversionService:
                 "Could not extract any text from the document. "
                 "The file may be scanned/image-only or empty."
             )
-
-        extracted = preprocess_extracted_text(extracted)
-        if page_texts is not None:
-            page_texts = [preprocess_extracted_text(page) for page in page_texts]
 
         template = self._convert_with_llm(extracted, page_texts=page_texts)
         resolved_name = output_name or f"{Path(filename).stem}.md"
@@ -247,4 +242,4 @@ class TemplateConversionService:
 
     @staticmethod
     def _clean_output(content: str) -> str:
-        return content.strip()
+        return strip_batch_markers(content.strip())
