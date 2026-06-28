@@ -18,7 +18,7 @@ store = TaskStore(config.mongodb_uri, config.mongodb_db, config.mongodb_tasks_co
 generation_service = GenerationService(config)
 template_service = TemplateService(config)
 transcript_service = TranscriptService(config)
-sync_redis = redis.Redis.from_url("redis://redis:6379/0")
+sync_redis = redis.Redis('redis')
 
 def update_task_status(task_id: str, status: str, error: str = None, output_name: str = None):
     from backend.services.tasks.service import broadcast_current_tasks
