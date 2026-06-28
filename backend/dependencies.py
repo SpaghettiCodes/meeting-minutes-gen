@@ -4,7 +4,7 @@ from functools import lru_cache
 
 from fastapi import Depends, Request
 
-from backend.models.config import ENV_FILE, AppConfig, load_config
+from backend.models.config import AppConfig, load_config
 from backend.services.export import ExportService
 from backend.services.generation import GenerationService
 from backend.services.minutes import MinutesService
@@ -12,11 +12,9 @@ from backend.services.tasks import TaskService
 from backend.services.templates import TemplateService
 from backend.services.transcripts import TranscriptService
 
-
 @lru_cache
 def get_config() -> AppConfig:
-    return load_config(ENV_FILE)
-
+    return load_config()
 
 def get_transcript_service(
     config: AppConfig = Depends(get_config),

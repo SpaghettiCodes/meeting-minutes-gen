@@ -5,19 +5,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.models.config import ENV_FILE, load_config
+from backend.models.config import load_config
 from backend.routers import export, generation, minutes, tasks, templates, transcripts
 from backend.services.tasks import TaskService
-
+import redis.asyncio as aioredis
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    config = load_config(ENV_FILE)
+    config = load_config()
     task_service = TaskService(config)
     app.state.task_service = task_service
-    await task_service.start_worker()
+    app.state.async_redis = aioredis.from_url("redis://redis:6379/0")
     yield
-    await task_service.stop_worker()
     task_service.close()
 
 

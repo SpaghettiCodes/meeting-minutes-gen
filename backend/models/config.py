@@ -5,12 +5,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-BACKEND_ROOT = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = BACKEND_ROOT.parent
-ENV_FILE = PROJECT_ROOT / ".env.backend"
-
 DEFAULT_LLM_BASE_URL = "http://localhost:8002/v1"
 DEFAULT_LLM_MODEL = "default"
 DEFAULT_WHISPERX_BASE_URL = "http://localhost:8000"
@@ -45,39 +39,22 @@ class FileInfo:
     modified_at: datetime
 
 
-def load_config(env_file: Path | None = None) -> AppConfig:
-    env_path = env_file or ENV_FILE
-    if env_path.is_file():
-        load_dotenv(env_path)
-    else:
-        project_env = PROJECT_ROOT / ".env"
-        if project_env.is_file():
-            load_dotenv(project_env)
-
+def load_config() -> AppConfig:
     llm_base_url = (
         os.getenv("LLM_BASE_URL")
-        or os.getenv("VLLM_BASE_URL")
         or DEFAULT_LLM_BASE_URL
     )
     llm_model = (
         os.getenv("LLM_MODEL")
-        or os.getenv("VLLM_MODEL")
         or DEFAULT_LLM_MODEL
     )
-    llm_api_key = os.getenv("LLM_API_KEY") or os.getenv("VLLM_API_KEY") or None
+    llm_api_key = os.getenv("LLM_API_KEY") or None
     whisperx_base_url = os.getenv("WHISPERX_BASE_URL") or DEFAULT_WHISPERX_BASE_URL
     transcription_language = (
         os.getenv("TRANSCRIPTION_LANGUAGE") or DEFAULT_TRANSCRIPTION_LANGUAGE
     )
 
-    def resolve_dir(key: str, default: str) -> Path:
-        path = Path(os.getenv(key, default))
-        if not path.is_absolute():
-            path = PROJECT_ROOT / path
-        return path
-
-    output_dir = resolve_dir("OUTPUT_DIR", "data/output")
-
+    DATA_DIR = Path(os.getenv("DATA_DIR") or 'data')
     return AppConfig(
         llm_base_url=llm_base_url,
         llm_model=llm_model,
@@ -87,17 +64,11 @@ def load_config(env_file: Path | None = None) -> AppConfig:
         temperature=float(os.getenv("TEMPERATURE", "0.2")),
         request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT") or "600"),
         whisperx_request_timeout=float(os.getenv("WHISPERX_REQUEST_TIMEOUT") or "3600"),
-        template_conversion_sources_dir=resolve_dir(
-            "TEMPLATE_CONVERSION_SOURCES_DIR",
-            "data/template_sources",
-        ),
-        transcription_sources_dir=resolve_dir(
-            "TRANSCRIPTION_SOURCES_DIR",
-            "data/transcription_sources",
-        ),
-        transcript_dir=resolve_dir("TRANSCRIPT_DIR", "data/transcripts"),
-        template_dir=resolve_dir("TEMPLATE_DIR", "data/templates"),
-        output_dir=output_dir,
+        template_conversion_sources_dir=DATA_DIR / "template_sources",
+        transcription_sources_dir=DATA_DIR / "transcription_sources",
+        transcript_dir=DATA_DIR / "transcripts",
+        template_dir=DATA_DIR / "templates",
+        output_dir=DATA_DIR / "output",
         mongodb_uri=os.getenv("MONGODB_URI", "mongodb://localhost:27017"),
         mongodb_db=os.getenv("MONGODB_DB", "meeting_minutes"),
         mongodb_tasks_collection=os.getenv("MONGODB_TASKS_COLLECTION", "tasks"),

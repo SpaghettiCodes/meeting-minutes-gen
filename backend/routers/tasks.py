@@ -13,6 +13,7 @@ from backend.schemas import (
 from backend.services.exceptions import ServiceError
 from backend.services.tasks.mappers import task_to_summary
 from backend.services.tasks import TaskService
+import asyncio
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -106,17 +107,23 @@ def list_tasks(
 
 @router.websocket("/ws")
 async def tasks_websocket(websocket: WebSocket) -> None:
-    service: TaskService = websocket.app.state.task_service
-    await service.broadcaster.connect(websocket)
+    await websocket.accept()
+    await websocket.app.state.task_service.broadcast_initial_values(websocket)
+    async_redis = websocket.app.state.async_redis
+    pubsub = async_redis.pubsub()
+    await pubsub.subscribe("task_updates")
     try:
-        summaries = [task_to_summary(task) for task in service.list_tasks()]
-        await service.broadcaster.send_snapshot(websocket, summaries)
         while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+            if message:
+                data = message['data'].decode('utf-8')
+                await websocket.send_text(data)
+            await asyncio.sleep(0.1)
+    except Exception:
         pass
     finally:
-        service.broadcaster.disconnect(websocket)
+        await pubsub.unsubscribe("task_updates")
+        await websocket.close()
 
 
 @router.get("/{task_id}", response_model=TaskDetail)
